@@ -145,6 +145,21 @@ function cam(c, scale, dTh, dPh){
           c[2]+R*Math.sin(ph)*Math.cos(th)];
 }
 
+/* the comparison shot: aim between the elephant's structure and the same
+   part of the human, far enough back that both are in the frame at once */
+function both(a){
+  const e = a.cam, h = a.humanCam;
+  if(!h) return cam(e, 2.10, .05, -.05);
+  const tx=(e[0]+h[0])/2, ty=(e[1]+h[1])/2, tz=(e[2]+h[2])/2;
+  const gap = Math.hypot(e[0]-h[0], e[1]-h[1], e[2]-h[2]);
+  const R = Math.max(5.2, gap*2.25);
+  const th = -0.12, ph = 1.30;
+  return [tx,ty,tz,
+          tx + R*Math.sin(ph)*Math.sin(th),
+          ty + R*Math.cos(ph),
+          tz + R*Math.sin(ph)*Math.cos(th)];
+}
+
 /* ---- state -------------------------------------------------------- */
 let on=false, step=0, view=0, rec=null, listening=false, said='';
 /* the whole run, kept so it can be copied out afterwards and read back */
@@ -178,9 +193,11 @@ function render(){
   if(s.idx===null){ reset(); }
   else {
     const a = ADAPTS[s.idx], c = a.cam;
+    /* the cutaway is the skull's air cells — it means nothing anywhere else */
+    const open = (a.id === 'skull');
     if(v==='out')      pick(s.idx,{cam:cam(c,1.85,-.34,-.07), cut:false, lbl:[0,1], inset:false});
-    else if(v==='in')  pick(s.idx,{cam:cam(c,0.80,.20,.12),   cut:true,  lbl:[1,2], inset:false});
-    else               pick(s.idx,{cam:cam(c,2.10,.05,-.05),  cut:true,  lbl:[2,3], inset:false});
+    else if(v==='in')  pick(s.idx,{cam:cam(c,0.80,.20,.12),   cut:open,  lbl:[1,2], inset:false});
+    else               pick(s.idx,{cam:both(a),               cut:open,  lbl:[2,3], inset:false});
     $('num').textContent = s.num;
   }
   pips();

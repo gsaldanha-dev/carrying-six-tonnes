@@ -102,13 +102,13 @@ const ADAPTS = [
     humanCam: [-5.070,1.060,0.180, -5.736,1.492,1.154],
     humanParts: ['fore'],
     humanLabels: [[-5.08,0.95,0.21,'radius + ulna cross',12,6]],
-    note: "The same bones as a human arm, but the ulna is about five times the radius and the two are locked side by side. A human's cross over each other, which is what turns the palm.",
-    terms: [['Ulna 5× the radius',0], ['Locked, cannot cross',0], ['Human: the two bones cross',1]],
+    note: "The same bones as a human arm, but the two are secured in pronation — permanently crossed and unable to rotate, with the ulna taking the load. A human forearm rotates freely between crossed and parallel, and that rotation is what turns the palm.",
+    terms: [['Ulna takes the load',0], ['Locked in pronation',0], ['Human: the forearm rotates',1]],
     rule: 'Forearm rotation traded for weight-bearing.',
     labels: [
       [-1.44, 1.66, 0.62, 'humerus', -92, -10],
-      [-1.49, 0.95, 0.52, 'radius — slender, in front', -144, 18],
-      [-1.35, 0.95, 0.72, 'ulna — about 5× heavier, takes the load', 124, 4],
+      [-1.49, 0.95, 0.52, 'radius — crossed over, locked there', -162, 18],
+      [-1.35, 0.95, 0.72, 'ulna — the main weight-bearing bone', 124, 4],
       [-1.42, 0.52, 0.62, 'carpals', -86, 40]
     ]
   },
