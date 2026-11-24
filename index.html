@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carrying Six Tonnes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EDE3; --panel:#E8E0D0; --ink:#15120D; --stone:#6F6757;
+    --line:#CFC5B1; --accent:#9C3B23; --accent2:#2F5D4B;
+    --display:"Fraunces",Didot,"Times New Roman",serif;
+    --ui:"Archivo",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:var(--ui);-webkit-font-smoothing:antialiased}
+  #page{height:100vh;display:flex;flex-direction:column}
+
+  /* ---------------- solid masthead band ---------------- */
+  .band{flex:0 0 auto;background:var(--ink);color:#F2EDE3;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 34px;height:62px}
+  .band .t{font-family:var(--display);font-weight:700;font-size:25px;
+    letter-spacing:.2px;font-variation-settings:"SOFT" 0,"WONK" 0}
+  .band .t em{font-style:italic;font-weight:500;opacity:.72;font-size:.74em;margin-left:12px}
+  .band .r{font-family:var(--ui);font-size:11px;font-weight:600;
+    letter-spacing:2.6px;text-transform:uppercase;text-align:right;line-height:1.55;opacity:.88}
+
+  /* ---------------- main ---------------- */
+  main{flex:1 1 auto;display:flex;min-height:0}
+  #stage{flex:1 1 auto;min-width:0;position:relative;padding:14px 0 0 22px}
+  canvas{display:block;width:100%;height:100%}
+  #leads,#lbls{position:absolute;inset:14px 0 0 22px;pointer-events:none;overflow:visible}
+  .lb{position:absolute;font-size:15px;font-weight:600;line-height:1.3;
+    color:#201C16;white-space:nowrap;padding:4px 10px 5px;
+    background:rgba(242,237,227,.94);border-bottom:2.5px solid var(--accent);
+    box-shadow:0 1px 6px rgba(40,32,20,.10);
+    animation:lbIn .45s ease both}
+  @keyframes lbIn{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+  @media (prefers-reduced-motion: reduce){ .lb{animation:none} }
+  .ld{fill:none;stroke:#9A9079;stroke-width:1.2}
+  .dt{fill:var(--accent)}
+  .caps{position:absolute;font-family:var(--display);font-weight:700;font-size:14px;
+    letter-spacing:4px;text-transform:uppercase;color:#8C8370}
+  #inset{position:absolute;border:1px solid #B9AE97;pointer-events:none;
+    box-shadow:0 2px 14px rgba(40,32,20,.10)}
+  #inset .icap{position:absolute;top:-21px;left:0;font-family:var(--display);
+    font-weight:700;font-size:12px;letter-spacing:3.4px;text-transform:uppercase;
+    color:#8C8370;white-space:nowrap}
+  #inset .ipart{position:absolute;top:-21px;right:0;font-size:10px;font-weight:600;
+    letter-spacing:1.8px;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+  #ilbls,#ileads{position:absolute;inset:14px 0 0 22px;pointer-events:none;overflow:visible}
+  .ilb{position:absolute;font-size:10.5px;font-weight:600;line-height:1.25;
+    color:#201C16;white-space:nowrap;padding:1px 5px 2px;
+    background:rgba(231,224,206,.92);border-bottom:2px solid var(--accent)}
+  .hint{position:absolute;right:22px;bottom:4px;font-size:9.5px;font-weight:500;
+    letter-spacing:1.8px;text-transform:uppercase;color:#B6AD99}
+
+  /* ---------------- the talking panel ---------------- */
+  aside{flex:0 0 430px;background:var(--panel);border-left:1px solid var(--line);
+    display:flex;flex-direction:column;padding:26px 32px 24px;min-height:0}
+  .head{display:flex;align-items:flex-start;gap:18px;margin-bottom:14px}
+  .num{font-family:var(--display);font-weight:900;font-size:104px;line-height:.78;
+    color:var(--accent);letter-spacing:-4px;font-variation-settings:"SOFT" 0,"WONK" 1}
+  .kind{margin-top:9px;font-size:11px;font-weight:700;letter-spacing:2.6px;
+    text-transform:uppercase;color:#FFF;background:var(--accent);padding:5px 10px;
+    display:inline-block;white-space:nowrap}
+  .kind.same{background:var(--accent2)}
+  h2{font-family:var(--display);font-weight:700;font-size:38px;line-height:1.04;
+    letter-spacing:-.6px;margin-bottom:22px;font-variation-settings:"SOFT" 0,"WONK" 0}
+
+  .terms{list-style:none;margin-bottom:20px}
+  .terms li{display:flex;align-items:stretch;gap:13px;margin-bottom:11px}
+  .terms li .bar{flex:0 0 7px;background:var(--ink)}
+  .terms li .tx{font-size:23px;font-weight:600;line-height:1.2;letter-spacing:-.3px;
+    padding:3px 0 4px}
+  .terms li.hum .bar{background:var(--accent)}
+  .terms li.hum .tx{color:var(--accent)}
+
+  .note{font-size:14.5px;font-weight:400;line-height:1.56;color:#4A4336;
+    border-top:1px solid var(--line);padding-top:14px}
+  .src{margin-top:12px;font-size:9.5px;line-height:1.55;color:#8E8572}
+  .verdict{margin-top:auto;padding:17px 20px 18px;
+    background:rgba(156,59,35,.075);border-left:6px solid var(--accent);
+    font-family:var(--display);font-style:italic;font-weight:700;font-size:21px;
+    line-height:1.26;color:var(--ink)}
+
+  /* ---------------- chapter rail ---------------- */
+  footer{flex:0 0 auto;background:var(--ink);color:#F2EDE3;padding:0 30px 12px}
+  .rail{display:flex;gap:5px;align-items:stretch}
+  .seg{flex:1 1 0;min-width:0;cursor:pointer;padding:11px 9px 9px;
+    border-top:5px solid #3B352A;transition:.18s}
+  .seg:hover{border-top-color:#7E7462}
+  .seg .k{font-family:var(--display);font-weight:900;font-size:19px;
+    color:#8A8270;display:block;line-height:1;margin-bottom:5px;transition:.18s}
+  .seg .s{font-size:13px;font-weight:600;letter-spacing:-.1px;color:#C9C1AE;
+    display:block;line-height:1.2;transition:.18s}
+  .seg.on{border-top-color:var(--accent)}
+  .seg.on .k{color:var(--accent);font-size:23px}
+  .seg.on .s{color:#FFF}
+
+  /* ---------------- rehearsal ---------------- */
+  .band .rgt{display:flex;align-items:center;gap:20px}
+  .rbtn{font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:2.2px;
+    text-transform:uppercase;background:transparent;color:#F2EDE3;
+    border:1px solid rgba(242,237,227,.38);padding:8px 13px;cursor:pointer;white-space:nowrap}
+  .rbtn:hover{border-color:#F2EDE3}
+  .rbtn.on{background:var(--accent);border-color:var(--accent)}
+  #rehwrap{display:none;padding-top:8px}
+  #rehwrap.on{display:block}
+  #rehbar{display:flex;align-items:center;gap:20px;color:#F2EDE3}
+  .rh-step{flex:0 0 190px;min-width:0}
+  .rh-step .kk{font-size:10px;font-weight:700;letter-spacing:2.4px;
+    text-transform:uppercase;color:#8A8270}
+  .rh-step .tt{font-family:var(--display);font-weight:700;font-size:20px;
+    line-height:1.1;color:#FFF;margin-top:3px}
+  .rh-time{flex:0 0 auto;display:flex;align-items:baseline;gap:10px}
+  .rh-time .big{font-family:var(--display);font-weight:900;font-size:33px;line-height:1;
+    color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-1.5px}
+  .rh-time .big.over{color:#D9A441}
+  .rh-time .sm{font-size:10.5px;font-weight:600;letter-spacing:1.5px;
+    text-transform:uppercase;color:#8A8270;white-space:nowrap}
+  .rh-chk{display:flex;gap:6px;flex:1 1 auto;min-width:0}
+  .rh-chk button{flex:1 1 0;min-width:0;background:transparent;border:1px solid #3B352A;
+    color:#9A917E;font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:1.3px;
+    text-transform:uppercase;padding:10px 6px;cursor:pointer;transition:.15s}
+  .rh-chk button:hover{border-color:#7E7462}
+  .rh-chk button.on{background:var(--accent2);border-color:var(--accent2);color:#FFF}
+  .rh-nav{display:flex;gap:6px;flex:0 0 auto}
+  .rh-nav button{background:transparent;border:1px solid #3B352A;color:#F2EDE3;
+    font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;padding:10px 13px;cursor:pointer}
+  .rh-nav button:hover{border-color:#7E7462}
+  .rh-nav button.go{background:var(--accent);border-color:var(--accent)}
+  .rh-pips{display:flex;gap:4px;margin-top:9px}
+  .rh-pips i{flex:1 1 0;height:4px;background:#3B352A}
+  .rh-pips i.on{background:var(--accent)}
+  .rh-pips i.ok{background:var(--accent2)}
+</style></head>
+<body>
+<div id="page">
+
+  <div class="band">
+    <div class="t">Carrying six tonnes<em>form and function in the elephant skeleton</em></div>
+    <div class="rgt">
+      <div class="r">Gustavo Arias Saldanha</div>
+      <button class="rbtn" id="reh">Presenter</button>
+    </div>
+  </div>
+
+  <main>
+    <div id="stage">
+      <svg id="leads"></svg>
+      <div id="lbls"></div>
+      <span class="caps" id="capH">Homo sapiens</span>
+      <span class="caps" id="capE">Loxodonta africana</span>
+      <svg id="ileads"></svg>
+      <div id="ilbls"></div>
+      <div id="inset"><span class="icap">Homo sapiens</span><span class="ipart" id="ipart"></span></div>
+      <span class="hint">Drag to turn · ← → for each structure</span>
+    </div>
+
+    <aside>
+      <div class="head">
+        <div class="num" id="num">—</div>
+        <div><span class="kind" id="kind">Overview</span></div>
+      </div>
+      <h2 id="ttl"></h2>
+      <ul class="terms" id="terms"></ul>
+      <p class="note" id="nt"></p>
+      <p class="src" id="src"></p>
+      <div class="verdict" id="vd"></div>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="rail" id="rail"></div>
+    <div id="rehwrap">
+      <div id="rehbar">
+        <div class="rh-step"><div class="kk" id="rhK"></div><div class="tt" id="rhT"></div></div>
+        <div class="rh-time"><span class="big" id="rhBig">0:15</span><span class="sm" id="rhSm"></span></div>
+        <div class="rh-chk">
+          <button data-c="0">Structure</button>
+          <button data-c="1">Function</button>
+          <button data-c="2">Human comparison</button>
+        </div>
+        <div class="rh-nav">
+          <button class="go" id="rhGo">Start</button>
+          <button id="rhPrev">&#8592;</button>
+          <button id="rhNext">&#8594;</button>
+          <button id="rhEnd">Exit</button>
+        </div>
+      </div>
+      <div class="rh-pips" id="rhPips"></div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
+<script src="data.js"></script>
+<script src="build3d.js"></script>
+<script>
+/* ?full=1 restores the full credit line for presenting */
+if(new URLSearchParams(location.search).has('full')){
+  document.querySelector('.band .r').innerHTML =
+    'Gustavo Arias Saldanha<br>MYP Year 3 \u00b7 Sciences \u00b7 Criterion A';
+}
+const PARTS = {
+  skull:['skull'], teeth:['teeth'], spine:['vert','spine','rib'],
+  shoulder:['scap','clav'], forelimb:['fore'], posture:['fore','hind'],
+  knee:['knee','hind'], foot:['foot','pad'], trunk:['trunk'],
+  gait:['foot','pad','fore','hind'], scale:[]
+};
+const OVER_TERMS = [['Same parts, same order',0],['100× the mass',0],['One rule throughout',1]];
+
+/* ======================== scene ==================================== */
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.10;
+renderer.autoClear = false;
+stage.insertBefore(renderer.domElement, stage.firstChild);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 200);
+
+makeMaterials();
+const G_ELE = buildElephant(), G_HUM = buildHuman();
+scene.add(G_ELE); scene.add(G_HUM);
+const ELE_MESHES = [], HUM_MESHES = [];
+G_ELE.traverse(o=>{ if(o.isMesh) ELE_MESHES.push(o); });
+G_HUM.traverse(o=>{ if(o.isMesh) HUM_MESHES.push(o); });
+
+scene.add(new THREE.HemisphereLight(0xFFFFFF, 0xCFC6B4, 0.74));
+const key = new THREE.DirectionalLight(0xFFF4E2, 2.05);
+key.position.set(-4.5, 9, 7.5); key.castShadow = true;
+key.shadow.mapSize.set(2048,2048);
+Object.assign(key.shadow.camera,{left:-8,right:8,top:8,bottom:-8,near:1,far:30});
+key.shadow.bias = -0.0012; key.shadow.radius = 3; scene.add(key);
+const fill = new THREE.DirectionalLight(0xE9E2D4, 0.52); fill.position.set(7,3,-5); scene.add(fill);
+const rim  = new THREE.DirectionalLight(0xFFFFFF, 0.44); rim.position.set(-2,5,-9); scene.add(rim);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60,60), new THREE.ShadowMaterial({opacity:0.17}));
+floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+
+/* ======================== camera =================================== */
+const T = new THREE.Vector3(), Tg = new THREE.Vector3();
+let S = {r:9.4, th:-0.5, ph:1.17}, Sg = {r:9.4, th:-0.5, ph:1.17};
+let uTh = 0, uPh = 0, cur = -1;
+const OVER = [-1.65,1.45,0, -7.4,4.0,11.4];
+
+/* ---- the comparative plate: a second camera on the human ---- */
+const IW=312, IH=336, IM=16;
+const camH = new THREE.PerspectiveCamera(32, IW/IH, 0.05, 200);
+const THp = new THREE.Vector3(-5.05,1.0,0), THg = new THREE.Vector3(-5.05,1.0,0);
+let SH={r:1.2,th:-0.6,ph:1.22}, SHg={r:1.2,th:-0.6,ph:1.22}, insetOn=false;
+function sph(c){
+  const dx=c[3]-c[0], dy=c[4]-c[1], dz=c[5]-c[2], r=Math.hypot(dx,dy,dz);
+  return {r, th:Math.atan2(dx,dz), ph:Math.acos(Math.max(-1,Math.min(1,dy/r)))};
+}
+function flyToH(c){ THg.set(c[0],c[1],c[2]); SHg = sph(c); }
+
+function flyTo(c){ Tg.set(c[0],c[1],c[2]); Sg = sph(c); }
+let down=false, px=0, py=0;
+stage.addEventListener('pointerdown',e=>{down=true;px=e.clientX;py=e.clientY;
+  stage.setPointerCapture(e.pointerId);});
+stage.addEventListener('pointerup',()=>{down=false;});
+stage.addEventListener('pointermove',e=>{
+  if(!down) return;
+  uTh -= (e.clientX-px)*0.0055;
+  uPh  = Math.max(-0.55, Math.min(0.42, uPh - (e.clientY-py)*0.0040));
+  px=e.clientX; py=e.clientY;
+});
+stage.addEventListener('wheel',e=>{
+  e.preventDefault();
+  Sg.r = Math.max(1.1, Math.min(32, Sg.r*(1 + Math.sign(e.deltaY)*0.09)));
+},{passive:false});
+
+/* ======================== labels =================================== */
+const SVGNS='http://www.w3.org/2000/svg';
+let LBL=[];
+function setLabels(list){
+  const box=document.getElementById('lbls'), sv=document.getElementById('leads');
+  box.innerHTML=''; sv.innerHTML='';
+  LBL = list.map(L=>{
+    const el=document.createElement('div'); el.className='lb'; el.textContent=L[3];
+    box.appendChild(el);
+    const ln=document.createElementNS(SVGNS,'path'); ln.setAttribute('class','ld'); sv.appendChild(ln);
+    const dt=document.createElementNS(SVGNS,'circle'); dt.setAttribute('r','2.6');
+    dt.setAttribute('class','dt'); sv.appendChild(dt);
+    return {el,ln,dt,p:new THREE.Vector3(L[0],L[1],L[2]),dx:L[4],dy:L[5]};
+  });
+}
+function placeLabels(){
+  const w=stage.clientWidth-22, h=stage.clientHeight-14;
+  LBL.forEach(L=>{
+    const v=L.p.clone().project(camera);
+    const ax=(v.x*.5+.5)*w, ay=(-v.y*.5+.5)*h;
+    const on = v.z<1 && ax>-150 && ax<w+150 && ay>-80 && ay<h+80;
+    L.el.style.display = L.ln.style.display = L.dt.style.display = on?'':'none';
+    if(!on) return;
+    let right = L.dx>=0, bx = ax+L.dx;
+    const by = Math.max(14, Math.min(h-14, ay+L.dy));
+    const lw = L.el.offsetWidth || 120;
+    // flip the label to the other side rather than let it run off the stage
+    if(right && bx+lw > w-8){ right=false; bx = ax-Math.abs(L.dx); }
+    else if(!right && bx-lw < 8){ right=true; bx = ax+Math.abs(L.dx); }
+    const fits = right ? (bx+lw <= w-4) : (bx-lw >= 4);
+    // never let a main label sit on top of the comparative plate
+    const l0 = right ? bx : bx-lw, r0 = right ? bx+lw : bx;
+    const clash = insetOn && r0 > IM-6 && l0 < IM+IW+6
+                           && by+13 > h-IM-IH-24 && by-13 < h-IM+6;
+    if(!fits || clash){ L.el.style.display=L.ln.style.display=L.dt.style.display='none'; return; }
+    L.el.style.left=bx+'px'; L.el.style.top=(by-11)+'px';
+    L.el.style.transform = right?'none':'translateX(-100%)';
+    const ex = right? bx-6 : bx+6;
+    L.ln.setAttribute('d', `M${ax} ${ay} L${ex} ${by}`);
+    L.dt.setAttribute('cx',ax); L.dt.setAttribute('cy',ay);
+  });
+  const show = (cur===-1) ? '' : 'none';
+  const ch=document.getElementById('capH'), ce=document.getElementById('capE');
+  ch.style.display = ce.style.display = show;
+  if(show) return;
+  const p=new THREE.Vector3(-5.05,2.10,0).project(camera);
+  const q=new THREE.Vector3(-0.10,4.70,0).project(camera);
+  ch.style.left=((p.x*.5+.5)*w-56)+'px'; ch.style.top=((-p.y*.5+.5)*h)+'px';
+  ce.style.left=((q.x*.5+.5)*w-78)+'px'; ce.style.top=((-q.y*.5+.5)*h)+'px';
+}
+
+let ILBL=[];
+function setInsetLabels(list){
+  const box=document.getElementById('ilbls'), sv=document.getElementById('ileads');
+  box.innerHTML=''; sv.innerHTML='';
+  ILBL = list.map(L=>{
+    const el=document.createElement('div'); el.className='ilb'; el.textContent=L[3];
+    box.appendChild(el);
+    const ln=document.createElementNS(SVGNS,'path'); ln.setAttribute('class','ld'); sv.appendChild(ln);
+    const dt=document.createElementNS(SVGNS,'circle'); dt.setAttribute('r','2.2');
+    dt.setAttribute('class','dt'); sv.appendChild(dt);
+    return {el,ln,dt,p:new THREE.Vector3(L[0],L[1],L[2]),dx:L[4],dy:L[5]};
+  });
+}
+function placeInsetLabels(h){
+  const x0=IM, y0=h-IM-IH;                       // the plate, in canvas coordinates
+  ILBL.forEach(L=>{
+    const v=L.p.clone().project(camH);
+    const ax=x0+(v.x*.5+.5)*IW, ay=y0+(-v.y*.5+.5)*IH;
+    const inside = v.z<1 && v.x>-1 && v.x<1 && v.y>-1 && v.y<1;
+    L.el.style.display=L.ln.style.display=L.dt.style.display = inside?'':'none';
+    if(!inside) return;
+    const lw=L.el.offsetWidth||90;
+    let right=L.dx>=0, bx=ax+L.dx;
+    if(right && bx+lw > x0+IW-6){ right=false; bx=ax-Math.abs(L.dx); }
+    else if(!right && bx-lw < x0+6){ right=true; bx=ax+Math.abs(L.dx); }
+    const by=Math.max(y0+11, Math.min(y0+IH-11, ay+L.dy));
+    L.el.style.left=bx+'px'; L.el.style.top=(by-10)+'px';
+    L.el.style.transform = right?'none':'translateX(-100%)';
+    L.ln.setAttribute('d', `M${ax} ${ay} L${right?bx-5:bx+5} ${by}`);
+    L.dt.setAttribute('cx',ax); L.dt.setAttribute('cy',ay);
+  });
+}
+
+/* ======================== panel ==================================== */
+function setTerms(list){
+  document.getElementById('terms').innerHTML = list.map(t=>
+    `<li class="${t[1]?'hum':''}"><span class="bar"></span><span class="tx">${t[0]}</span></li>`
+  ).join('');
+}
+function highlight(meshes, want, cutaway){
+  meshes.forEach(m=>{
+    if(!m.userData.m0) return;
+    const on = (!want.length || want.includes(m.userData.part));
+    if(m.userData.cell){
+      m.visible = !!cutaway; m.material = m.userData.m0; m.castShadow = false; return;
+    }
+    if(m.userData.shell){
+      m.material = !on ? MATS.ghost : (cutaway ? MATS.shell : m.userData.m0);
+      m.castShadow = on && !cutaway; return;
+    }
+    m.material = on ? m.userData.m0 : MATS.ghost;
+    m.castShadow = on;
+  });
+}
+function pick(i, opt){
+  opt = opt || {};
+  cur=i; const a=ADAPTS[i];
+  document.querySelectorAll('.seg').forEach(n=>n.classList.toggle('on',+n.dataset.i===i));
+  const nn = String(a.n).padStart(2,'0');
+  document.getElementById('num').textContent = nn;
+  const k=document.getElementById('kind');
+  k.className = 'kind' + (a.kind==='same'?' same':'');
+  k.textContent = a.kind==='same' ? 'A similarity' : 'A difference';
+  document.getElementById('ttl').textContent=a.title;
+  setTerms(a.terms);
+  document.getElementById('nt').textContent=a.note;
+  document.getElementById('vd').textContent=a.rule;
+  const cut = (opt.cut===undefined) ? (a.id==='skull') : opt.cut;
+  highlight(ELE_MESHES, PARTS[a.id]||[], cut);
+  highlight(HUM_MESHES, a.humanParts||[], false);
+  setLabels(opt.lbl ? opt.lbl.map(n=>a.labels[n]).filter(Boolean) : a.labels);
+  flyTo(opt.cam || a.cam);
+  insetOn = (opt.inset===undefined) ? !!a.humanCam : (opt.inset && !!a.humanCam);
+  document.getElementById('inset').style.display = insetOn?'':'none';
+  document.getElementById('ipart').textContent = insetOn ? a.short : '';
+  setInsetLabels(insetOn ? (a.humanLabels||[]) : []);
+  if(insetOn) flyToH(a.humanCam);
+}
+function reset(){
+  cur=-1;
+  document.querySelectorAll('.seg').forEach(n=>n.classList.remove('on'));
+  document.getElementById('num').textContent='—';
+  const k=document.getElementById('kind'); k.className='kind'; k.textContent='Overview';
+  document.getElementById('ttl').textContent='Two skeletons, one rule';
+  setTerms(OVER_TERMS);
+  document.getElementById('nt').textContent='The same parts, in the same order, in both animals. Nothing has been invented — what changed is proportion, posture and the inside of the bone.';
+  document.getElementById('vd').textContent='Add bone where force passes to the ground; remove bone where it is only cargo.';
+  highlight(ELE_MESHES, [], false); highlight(HUM_MESHES, [], false);
+  setLabels(BASE); flyTo(OVER);
+  insetOn = false;
+  document.getElementById('inset').style.display='none';
+  setInsetLabels([]);
+}
+
+const rail=document.getElementById('rail');
+rail.innerHTML = ADAPTS.map((a,i)=>
+  `<div class="seg" data-i="${i}"><span class="k">${String(a.n).padStart(2,'0')}</span>`+
+  `<span class="s">${a.short}</span></div>`).join('');
+rail.querySelectorAll('.seg').forEach(n=>n.addEventListener('click',()=>pick(+n.dataset.i)));
+document.getElementById('src').textContent =
+  'Sources — ' + SOURCES.map(s=>s[0]+' ('+s[1]+')').join(' · ');
+
+/* ======================== rehearsal ================================ */
+/* Three minutes, six beats. The panel on the right is already the cue —
+   this layer only adds the clock and the Criterion A self-check.       */
+/* a camera derived from a known-good one: same target, pushed in or pulled
+   back along the same sight line, optionally swung round it */
+function camFrom(c, scale, dTh, dPh){
+  const dx=c[3]-c[0], dy=c[4]-c[1], dz=c[5]-c[2], r=Math.hypot(dx,dy,dz);
+  const th=Math.atan2(dx,dz)+(dTh||0);
+  const ph=Math.max(0.25, Math.min(1.45,
+            Math.acos(Math.max(-1,Math.min(1,dy/r)))+(dPh||0)));
+  const R=r*(scale||1);
+  return [c[0],c[1],c[2],
+          c[0]+R*Math.sin(ph)*Math.sin(th),
+          c[1]+R*Math.cos(ph),
+          c[2]+R*Math.sin(ph)*Math.cos(th)];
+}
+/* Four shots across a 35-second beat, cut to the three strands:
+   approach and name it · open it up · hold on the mechanism · turn to the human */
+function structShots(k){
+  const c = ADAPTS[k].cam;
+  return [
+    {at:0,  cam:camFrom(c, 2.10, -0.42, -0.10), cut:false, lbl:[0],   inset:false},
+    {at:8,  cam:c,                              cut:true,  lbl:[0,1], inset:false},
+    {at:18, cam:camFrom(c, 0.76,  0.24,  0.14), cut:true,  lbl:[1,2], inset:false},
+    {at:27, cam:camFrom(c, 2.10,  0.05, -0.05), cut:true,  lbl:[2,3], inset:false}
+  ];
+}
+function openShots(){
+  return [
+    {at:0, cam:camFrom(OVER, 1.18, -0.34, -0.04)},
+    {at:8, cam:camFrom(OVER, 0.94,  0.26,  0.06)}
+  ];
+}
+function closeShots(k){
+  const c = ADAPTS[k].cam;
+  return [
+    {at:0,  cam:camFrom(c, 1.95, -0.32, -0.08), lbl:[0],   inset:false},
+    {at:9,  cam:c,                              lbl:[0,1], inset:false},
+    {at:17, cam:camFrom(c, 1.35,  0.52,  0.04), lbl:[1,2], inset:false}
+  ];
+}
+
+const RUN = [
+  {idx:null, budget:15, kk:'Opening',          tt:'Who you are, and the rule'},
+  {idx:0,    budget:35, kk:'Structure 1 of 4', tt:'The skull'},
+  {idx:5,    budget:35, kk:'Structure 2 of 4', tt:'Columnar limbs'},
+  {idx:7,    budget:35, kk:'Structure 3 of 4', tt:'The foot'},
+  {idx:6,    budget:35, kk:'Structure 4 of 4', tt:'The knee'},
+  {idx:10,   budget:25, kk:'Close',            tt:'The square–cube law'}
+];
+RUN.forEach(s=>{
+  s.shots = s.idx===null ? openShots()
+          : s.idx===10   ? closeShots(s.idx)
+          :                structShots(s.idx);
+});
+const TOTAL = RUN.reduce((a,b)=>a+b.budget,0);
+let rehOn=false, rStep=0, rShot=-1, rRun=false, rTick=null, rLast=0;
+let rSpent = RUN.map(()=>0);
+let rChk   = RUN.map(()=>[false,false,false]);
+
+const $r = id => document.getElementById(id);
+function mmss(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+function rhPips(){
+  $r('rhPips').innerHTML = RUN.map((s,n)=>
+    '<i class="'+(n===rStep?'on':(rChk[n].every(Boolean)?'ok':''))+'"></i>').join('');
+}
+function applyShot(step, s){
+  if(step.idx===null){ reset(); flyTo(s.cam); }
+  else pick(step.idx, {cam:s.cam, cut:s.cut, lbl:s.lbl, inset:s.inset});
+}
+function rhShots(){
+  const sh=RUN[rStep].shots, e=rSpent[rStep];
+  let n=0; for(let j=0;j<sh.length;j++) if(e>=sh[j].at) n=j;
+  if(n!==rShot){ rShot=n; applyShot(RUN[rStep], sh[n]); }
+}
+function rhClock(){
+  rhShots();
+  const b=RUN[rStep].budget, e=rSpent[rStep], left=b-e, over=left<0;
+  const big=$r('rhBig');
+  big.textContent = over ? '+'+mmss(-left) : mmss(left);
+  big.classList.toggle('over', over);
+  const tot = rSpent.reduce((a,b)=>a+b,0);
+  $r('rhSm').textContent = 'left in this beat · total '+mmss(tot)+' / '+mmss(TOTAL);
+}
+function rhChecks(){
+  document.querySelectorAll('.rh-chk button').forEach(b=>
+    b.classList.toggle('on', rChk[rStep][+b.dataset.c]));
+}
+function rhGoTo(n){
+  rStep = (n+RUN.length)%RUN.length;
+  const s = RUN[rStep];
+  $r('rhK').textContent = s.kk;
+  $r('rhT').textContent = s.tt;
+  rShot = -1;
+  rhChecks(); rhPips(); rhClock();
+}
+function rhStart(){
+  if(rRun) return;
+  rRun=true; $r('rhGo').textContent='Pause'; rLast=Date.now();
+  rTick=setInterval(()=>{
+    const now=Date.now(); rSpent[rStep]+=(now-rLast)/1000; rLast=now; rhClock();
+  },100);
+}
+function rhStop(){
+  rRun=false; $r('rhGo').textContent='Start';
+  if(rTick){ clearInterval(rTick); rTick=null; }
+}
+function rhEnter(){
+  rehOn=true;
+  $r('reh').classList.add('on');
+  $r('rehwrap').classList.add('on');
+  document.getElementById('rail').style.display='none';
+  rSpent = RUN.map(()=>0); rChk = RUN.map(()=>[false,false,false]);
+  document.querySelector('.hint').textContent = 'Space to start · ← → for each beat · 1 2 3 to tick';
+  resize(); rhGoTo(0);
+}
+function rhExit(){
+  rhStop(); rehOn=false;
+  $r('reh').classList.remove('on');
+  $r('rehwrap').classList.remove('on');
+  document.getElementById('rail').style.display='';
+  document.querySelector('.hint').textContent = 'Drag to turn · ← → for each structure';
+  resize(); reset();
+}
+$r('reh').onclick    = ()=> rehOn ? rhExit() : rhEnter();
+$r('rhGo').onclick   = ()=> rRun ? rhStop() : rhStart();
+$r('rhPrev').onclick = ()=> rhGoTo(rStep-1);
+$r('rhNext').onclick = ()=> rhGoTo(rStep+1);
+$r('rhEnd').onclick  = rhExit;
+document.querySelectorAll('.rh-chk button').forEach(b=>b.onclick=()=>{
+  const c=+b.dataset.c; rChk[rStep][c]=!rChk[rStep][c]; rhChecks(); rhPips();
+});
+
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='BUTTON' && e.code==='Space') return;
+  if(rehOn){
+    if(e.code==='Space'){ e.preventDefault(); rRun?rhStop():rhStart(); }
+    else if(e.key==='ArrowRight') rhGoTo(rStep+1);
+    else if(e.key==='ArrowLeft')  rhGoTo(rStep-1);
+    else if(e.key>='1'&&e.key<='3'){ const c=+e.key-1; rChk[rStep][c]=!rChk[rStep][c]; rhChecks(); rhPips(); }
+    else if(e.key==='Escape') rhExit();
+    return;
+  }
+  if(e.key==='ArrowRight') pick((cur+1+ADAPTS.length)%ADAPTS.length);
+  else if(e.key==='ArrowLeft') pick((cur-1+ADAPTS.length)%ADAPTS.length);
+  else if(e.key==='0'||e.key==='Escape') reset();
+});
+
+/* ======================== loop ===================================== */
+function resize(){
+  const w=stage.clientWidth-22, h=stage.clientHeight-14;
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+  const box=document.getElementById('inset');
+  box.style.left=(22+IM)+'px'; box.style.bottom=IM+'px';
+  box.style.width=IW+'px';     box.style.height=IH+'px';
+}
+addEventListener('resize',resize);
+function snap(){ T.copy(Tg); S={r:Sg.r,th:Sg.th,ph:Sg.ph};
+  THp.copy(THg); SH={r:SHg.r,th:SHg.th,ph:SHg.ph}; }
+
+const clock=new THREE.Clock();
+(function loop(){
+  requestAnimationFrame(loop);
+  const t=clock.getElapsedTime(), k=0.062;
+  T.lerp(Tg,k);
+  S.r += (Sg.r-S.r)*k; S.th += (Sg.th-S.th)*k; S.ph += (Sg.ph-S.ph)*k;
+  const th=S.th+uTh+Math.sin(t*0.21)*0.085;
+  const ph=Math.max(0.22,Math.min(1.50,S.ph+uPh+Math.sin(t*0.15)*0.022));
+  camera.position.set(
+    T.x + S.r*Math.sin(ph)*Math.sin(th),
+    T.y + S.r*Math.cos(ph),
+    T.z + S.r*Math.sin(ph)*Math.cos(th));
+  camera.lookAt(T);
+
+  THp.lerp(THg,k);
+  SH.r += (SHg.r-SH.r)*k; SH.th += (SHg.th-SH.th)*k; SH.ph += (SHg.ph-SH.ph)*k;
+  const thH=SH.th+Math.sin(t*0.13)*0.055, phH=SH.ph+Math.sin(t*0.11)*0.015;
+  camH.position.set(
+    THp.x + SH.r*Math.sin(phH)*Math.sin(thH),
+    THp.y + SH.r*Math.cos(phH),
+    THp.z + SH.r*Math.sin(phH)*Math.cos(thH));
+  camH.lookAt(THp);
+
+  const W=renderer.domElement.clientWidth, H=renderer.domElement.clientHeight;
+  placeLabels();
+
+  renderer.setScissorTest(false);
+  renderer.setClearColor(0x000000,0);
+  renderer.setViewport(0,0,W,H);
+  renderer.clear();
+  renderer.render(scene,camera);
+
+  if(insetOn){
+    renderer.setScissorTest(true);
+    renderer.setViewport(IM,IM,IW,IH);
+    renderer.setScissor(IM,IM,IW,IH);
+    renderer.setClearColor(0xE7E0CE,1);
+    renderer.clear();
+    renderer.render(scene,camH);
+    renderer.setScissorTest(false);
+    placeInsetLabels(H);
+  }
+})();
+
+resize(); reset(); snap();
+</script>
+</body></html>
