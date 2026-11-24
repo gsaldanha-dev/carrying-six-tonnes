@@ -101,53 +101,13 @@
   .seg.on .k{color:var(--accent);font-size:23px}
   .seg.on .s{color:#FFF}
 
-  /* ---------------- rehearsal ---------------- */
-  .band .rgt{display:flex;align-items:center;gap:20px}
-  .rbtn{font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:2.2px;
-    text-transform:uppercase;background:transparent;color:#F2EDE3;
-    border:1px solid rgba(242,237,227,.38);padding:8px 13px;cursor:pointer;white-space:nowrap}
-  .rbtn:hover{border-color:#F2EDE3}
-  .rbtn.on{background:var(--accent);border-color:var(--accent)}
-  #rehwrap{display:none;padding-top:8px}
-  #rehwrap.on{display:block}
-  #rehbar{display:flex;align-items:center;gap:20px;color:#F2EDE3}
-  .rh-step{flex:0 0 190px;min-width:0}
-  .rh-step .kk{font-size:10px;font-weight:700;letter-spacing:2.4px;
-    text-transform:uppercase;color:#8A8270}
-  .rh-step .tt{font-family:var(--display);font-weight:700;font-size:20px;
-    line-height:1.1;color:#FFF;margin-top:3px}
-  .rh-time{flex:0 0 auto;display:flex;align-items:baseline;gap:10px}
-  .rh-time .big{font-family:var(--display);font-weight:900;font-size:33px;line-height:1;
-    color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-1.5px}
-  .rh-time .big.over{color:#D9A441}
-  .rh-time .sm{font-size:10.5px;font-weight:600;letter-spacing:1.5px;
-    text-transform:uppercase;color:#8A8270;white-space:nowrap}
-  .rh-chk{display:flex;gap:6px;flex:1 1 auto;min-width:0}
-  .rh-chk button{flex:1 1 0;min-width:0;background:transparent;border:1px solid #3B352A;
-    color:#9A917E;font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:1.3px;
-    text-transform:uppercase;padding:10px 6px;cursor:pointer;transition:.15s}
-  .rh-chk button:hover{border-color:#7E7462}
-  .rh-chk button.on{background:var(--accent2);border-color:var(--accent2);color:#FFF}
-  .rh-nav{display:flex;gap:6px;flex:0 0 auto}
-  .rh-nav button{background:transparent;border:1px solid #3B352A;color:#F2EDE3;
-    font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:1.5px;
-    text-transform:uppercase;padding:10px 13px;cursor:pointer}
-  .rh-nav button:hover{border-color:#7E7462}
-  .rh-nav button.go{background:var(--accent);border-color:var(--accent)}
-  .rh-pips{display:flex;gap:4px;margin-top:9px}
-  .rh-pips i{flex:1 1 0;height:4px;background:#3B352A}
-  .rh-pips i.on{background:var(--accent)}
-  .rh-pips i.ok{background:var(--accent2)}
 </style></head>
 <body>
 <div id="page">
 
   <div class="band">
     <div class="t">Carrying six tonnes<em>form and function in the elephant skeleton</em></div>
-    <div class="rgt">
-      <div class="r">Gustavo Arias Saldanha</div>
-      <button class="rbtn" id="reh">Presenter</button>
-    </div>
+    <div class="r">Gustavo Arias Saldanha</div>
   </div>
 
   <main>
@@ -175,27 +135,7 @@
     </aside>
   </main>
 
-  <footer>
-    <div class="rail" id="rail"></div>
-    <div id="rehwrap">
-      <div id="rehbar">
-        <div class="rh-step"><div class="kk" id="rhK"></div><div class="tt" id="rhT"></div></div>
-        <div class="rh-time"><span class="big" id="rhBig">0:15</span><span class="sm" id="rhSm"></span></div>
-        <div class="rh-chk">
-          <button data-c="0">Structure</button>
-          <button data-c="1">Function</button>
-          <button data-c="2">Human comparison</button>
-        </div>
-        <div class="rh-nav">
-          <button class="go" id="rhGo">Start</button>
-          <button id="rhPrev">&#8592;</button>
-          <button id="rhNext">&#8594;</button>
-          <button id="rhEnd">Exit</button>
-        </div>
-      </div>
-      <div class="rh-pips" id="rhPips"></div>
-    </div>
-  </footer>
+  <footer><div class="rail" id="rail"></div></footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
@@ -434,150 +374,7 @@ rail.querySelectorAll('.seg').forEach(n=>n.addEventListener('click',()=>pick(+n.
 document.getElementById('src').textContent =
   'Sources — ' + SOURCES.map(s=>s[0]+' ('+s[1]+')').join(' · ');
 
-/* ======================== rehearsal ================================ */
-/* Three minutes, six beats. The panel on the right is already the cue —
-   this layer only adds the clock and the Criterion A self-check.       */
-/* a camera derived from a known-good one: same target, pushed in or pulled
-   back along the same sight line, optionally swung round it */
-function camFrom(c, scale, dTh, dPh){
-  const dx=c[3]-c[0], dy=c[4]-c[1], dz=c[5]-c[2], r=Math.hypot(dx,dy,dz);
-  const th=Math.atan2(dx,dz)+(dTh||0);
-  const ph=Math.max(0.25, Math.min(1.45,
-            Math.acos(Math.max(-1,Math.min(1,dy/r)))+(dPh||0)));
-  const R=r*(scale||1);
-  return [c[0],c[1],c[2],
-          c[0]+R*Math.sin(ph)*Math.sin(th),
-          c[1]+R*Math.cos(ph),
-          c[2]+R*Math.sin(ph)*Math.cos(th)];
-}
-/* Four shots across a 35-second beat, cut to the three strands:
-   approach and name it · open it up · hold on the mechanism · turn to the human */
-function structShots(k){
-  const c = ADAPTS[k].cam;
-  return [
-    {at:0,  cam:camFrom(c, 2.10, -0.42, -0.10), cut:false, lbl:[0],   inset:false},
-    {at:8,  cam:c,                              cut:true,  lbl:[0,1], inset:false},
-    {at:18, cam:camFrom(c, 0.76,  0.24,  0.14), cut:true,  lbl:[1,2], inset:false},
-    {at:27, cam:camFrom(c, 2.10,  0.05, -0.05), cut:true,  lbl:[2,3], inset:false}
-  ];
-}
-function openShots(){
-  return [
-    {at:0, cam:camFrom(OVER, 1.18, -0.34, -0.04)},
-    {at:8, cam:camFrom(OVER, 0.94,  0.26,  0.06)}
-  ];
-}
-function closeShots(k){
-  const c = ADAPTS[k].cam;
-  return [
-    {at:0,  cam:camFrom(c, 1.95, -0.32, -0.08), lbl:[0],   inset:false},
-    {at:9,  cam:c,                              lbl:[0,1], inset:false},
-    {at:17, cam:camFrom(c, 1.35,  0.52,  0.04), lbl:[1,2], inset:false}
-  ];
-}
-
-const RUN = [
-  {idx:null, budget:15, kk:'Opening',          tt:'Who you are, and the rule'},
-  {idx:0,    budget:35, kk:'Structure 1 of 4', tt:'The skull'},
-  {idx:5,    budget:35, kk:'Structure 2 of 4', tt:'Columnar limbs'},
-  {idx:7,    budget:35, kk:'Structure 3 of 4', tt:'The foot'},
-  {idx:6,    budget:35, kk:'Structure 4 of 4', tt:'The knee'},
-  {idx:10,   budget:25, kk:'Close',            tt:'The square–cube law'}
-];
-RUN.forEach(s=>{
-  s.shots = s.idx===null ? openShots()
-          : s.idx===10   ? closeShots(s.idx)
-          :                structShots(s.idx);
-});
-const TOTAL = RUN.reduce((a,b)=>a+b.budget,0);
-let rehOn=false, rStep=0, rShot=-1, rRun=false, rTick=null, rLast=0;
-let rSpent = RUN.map(()=>0);
-let rChk   = RUN.map(()=>[false,false,false]);
-
-const $r = id => document.getElementById(id);
-function mmss(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
-
-function rhPips(){
-  $r('rhPips').innerHTML = RUN.map((s,n)=>
-    '<i class="'+(n===rStep?'on':(rChk[n].every(Boolean)?'ok':''))+'"></i>').join('');
-}
-function applyShot(step, s){
-  if(step.idx===null){ reset(); flyTo(s.cam); }
-  else pick(step.idx, {cam:s.cam, cut:s.cut, lbl:s.lbl, inset:s.inset});
-}
-function rhShots(){
-  const sh=RUN[rStep].shots, e=rSpent[rStep];
-  let n=0; for(let j=0;j<sh.length;j++) if(e>=sh[j].at) n=j;
-  if(n!==rShot){ rShot=n; applyShot(RUN[rStep], sh[n]); }
-}
-function rhClock(){
-  rhShots();
-  const b=RUN[rStep].budget, e=rSpent[rStep], left=b-e, over=left<0;
-  const big=$r('rhBig');
-  big.textContent = over ? '+'+mmss(-left) : mmss(left);
-  big.classList.toggle('over', over);
-  const tot = rSpent.reduce((a,b)=>a+b,0);
-  $r('rhSm').textContent = 'left in this beat · total '+mmss(tot)+' / '+mmss(TOTAL);
-}
-function rhChecks(){
-  document.querySelectorAll('.rh-chk button').forEach(b=>
-    b.classList.toggle('on', rChk[rStep][+b.dataset.c]));
-}
-function rhGoTo(n){
-  rStep = (n+RUN.length)%RUN.length;
-  const s = RUN[rStep];
-  $r('rhK').textContent = s.kk;
-  $r('rhT').textContent = s.tt;
-  rShot = -1;
-  rhChecks(); rhPips(); rhClock();
-}
-function rhStart(){
-  if(rRun) return;
-  rRun=true; $r('rhGo').textContent='Pause'; rLast=Date.now();
-  rTick=setInterval(()=>{
-    const now=Date.now(); rSpent[rStep]+=(now-rLast)/1000; rLast=now; rhClock();
-  },100);
-}
-function rhStop(){
-  rRun=false; $r('rhGo').textContent='Start';
-  if(rTick){ clearInterval(rTick); rTick=null; }
-}
-function rhEnter(){
-  rehOn=true;
-  $r('reh').classList.add('on');
-  $r('rehwrap').classList.add('on');
-  document.getElementById('rail').style.display='none';
-  rSpent = RUN.map(()=>0); rChk = RUN.map(()=>[false,false,false]);
-  document.querySelector('.hint').textContent = 'Space to start · ← → for each beat · 1 2 3 to tick';
-  resize(); rhGoTo(0);
-}
-function rhExit(){
-  rhStop(); rehOn=false;
-  $r('reh').classList.remove('on');
-  $r('rehwrap').classList.remove('on');
-  document.getElementById('rail').style.display='';
-  document.querySelector('.hint').textContent = 'Drag to turn · ← → for each structure';
-  resize(); reset();
-}
-$r('reh').onclick    = ()=> rehOn ? rhExit() : rhEnter();
-$r('rhGo').onclick   = ()=> rRun ? rhStop() : rhStart();
-$r('rhPrev').onclick = ()=> rhGoTo(rStep-1);
-$r('rhNext').onclick = ()=> rhGoTo(rStep+1);
-$r('rhEnd').onclick  = rhExit;
-document.querySelectorAll('.rh-chk button').forEach(b=>b.onclick=()=>{
-  const c=+b.dataset.c; rChk[rStep][c]=!rChk[rStep][c]; rhChecks(); rhPips();
-});
-
 addEventListener('keydown',e=>{
-  if(e.target.tagName==='BUTTON' && e.code==='Space') return;
-  if(rehOn){
-    if(e.code==='Space'){ e.preventDefault(); rRun?rhStop():rhStart(); }
-    else if(e.key==='ArrowRight') rhGoTo(rStep+1);
-    else if(e.key==='ArrowLeft')  rhGoTo(rStep-1);
-    else if(e.key>='1'&&e.key<='3'){ const c=+e.key-1; rChk[rStep][c]=!rChk[rStep][c]; rhChecks(); rhPips(); }
-    else if(e.key==='Escape') rhExit();
-    return;
-  }
   if(e.key==='ArrowRight') pick((cur+1+ADAPTS.length)%ADAPTS.length);
   else if(e.key==='ArrowLeft') pick((cur-1+ADAPTS.length)%ADAPTS.length);
   else if(e.key==='0'||e.key==='Escape') reset();
