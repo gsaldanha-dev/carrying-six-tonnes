@@ -123,6 +123,7 @@ wrap.innerHTML =
     '<div class="cap" id="pCap"><i>Press Listen, then talk. The slide follows what you say.</i></div>' +
     '<div class="nav">' +
       '<button class="mic" id="pMic">Listen</button>' +
+      '<button id="pCopy">Copy talk</button>' +
       '<button id="pPrev">&#8592;</button><button id="pNext">&#8594;</button>' +
       '<button id="pEnd">Exit</button>' +
     '</div>' +
@@ -146,6 +147,12 @@ function cam(c, scale, dTh, dPh){
 
 /* ---- state -------------------------------------------------------- */
 let on=false, step=0, view=0, rec=null, listening=false, said='';
+/* the whole run, kept so it can be copied out afterwards and read back */
+let log=[], t0=0;
+function stamp(){
+  const s=Math.round((Date.now()-t0)/1000);
+  return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+}
 
 function flat(){ const a=[]; SEQ.forEach((s,i)=>s.views.forEach((v,j)=>a.push([i,j]))); return a; }
 const FLAT = flat();
@@ -219,7 +226,11 @@ function mic(){
       const r0=e.results[i];
       if(r0.isFinal) fin += r0[0].transcript; else int += r0[0].transcript;
     }
-    if(fin){ said=(said+' '+fin).slice(-400); heard(fin); }
+    if(fin){
+      said=(said+' '+fin).slice(-400);
+      log.push('['+stamp()+' · '+SEQ[step].kicker+' / '+SEQ[step].views[view]+'] '+fin.trim());
+      heard(fin);
+    }
     const show=(said+' '+int).trim().slice(-170);
     $('pCap').textContent = show || '…';
     if(int) heard(int);
@@ -229,7 +240,8 @@ function mic(){
     listening=false; $('pMic').classList.remove('on'); $('pMic').textContent='Listen';
   };
   rec.onend = () => { if(listening){ try{ rec.start(); }catch(e){} } };
-  try { rec.start(); listening=true; $('pMic').classList.add('on'); $('pMic').textContent='Stop'; }
+  try { rec.start(); listening=true; log=[]; t0=Date.now();
+        $('pMic').classList.add('on'); $('pMic').textContent='Stop'; }
   catch(e){ $('pCap').innerHTML = '<i>Could not start the microphone.</i>'; }
 }
 
@@ -262,6 +274,33 @@ $('pNext').onclick = ()=> move(1);
 $('pPrev').onclick = ()=> move(-1);
 $('pEnd').onclick  = leave;
 $('pMic').onclick  = mic;
+
+$('pCopy').onclick = async () => {
+  if(!log.length){ $('pCap').innerHTML = '<i>Nothing recorded yet — press Listen first.</i>'; return; }
+  const text = 'Rehearsal — ' + new Date().toLocaleString() + '\n' +
+               'Total ' + stamp() + '\n\n' + log.join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    $('pCap').innerHTML = '<i>Copied — ' + log.length + ' lines, ' + stamp() + '. Paste it to Claude.</i>';
+  } catch (e) {
+    document.getElementById('ptxt')?.remove();
+    const box = document.createElement('div');
+    box.id = 'ptxt';
+    box.style.cssText = 'position:fixed;inset:6% 4%;z-index:99;background:#15120D;' +
+      'border:1px solid #3B352A;padding:16px;display:flex;flex-direction:column;gap:10px';
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'flex:1;width:100%;font:13px/1.5 monospace;background:#1E1B16;' +
+      'color:#F2EDE3;border:1px solid #3B352A;padding:12px;resize:none';
+    const close = document.createElement('button');
+    close.textContent = 'Close';
+    close.style.cssText = 'align-self:flex-end;background:#9C3B23;color:#fff;border:0;' +
+      'font:700 11px/1 sans-serif;letter-spacing:1.5px;text-transform:uppercase;padding:10px 16px;cursor:pointer';
+    close.onclick = () => box.remove();
+    box.append(ta, close); document.body.appendChild(box); ta.select();
+    $('pCap').innerHTML = '<i>Clipboard blocked — select the text and copy it by hand.</i>';
+  }
+};
 
 addEventListener('keydown', e=>{
   if(!on) return;
