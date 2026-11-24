@@ -24,19 +24,38 @@ const SEQ = [
 /* words that jump the talk forward. Only ever forward, never back, so a
    word said in passing cannot drag the slide backwards mid-sentence. */
 const TRIG = [
-  [1,'in', ['attachment','anchor','anchors','tusks','trunk muscles','enormous']],
-  [1,'vs', ['five kilo','5 kilo','solid plate','your skull','balanced']],
-  [2,'out',['columnar','column','limbs','four legs']],
-  [2,'in', ['compression','trabecular','marrow','packed','filled','crush']],
-  [2,'vs', ['spring','bent','bend','hollow tube','running and jumping']],
-  [3,'out',['the foot','foot','no bone touches']],
-  [3,'in', ['cushion','collagen','pressure','divided by area','force divided']],
-  [3,'vs', ['heel','calcaneus','thin pad']],
-  [4,'out',['the knee','knee','screw']],
-  [4,'in', ['screw-home','screw home','sixteen','locks straight','lock']],
-  [4,'vs', ['ten degrees','menisci','your knee']],
-  [5,'out',['square','cube','double every','eight times','geometry']],
-  [5,'in', ['three moves','remove','add bone','by choice']]
+  [1,'out',['skull','cranium','the head','start with','starting with','start off',
+            'first structure','begin with']],
+  [1,'in', ['pneumatised','pneumatized','newmatised','air cell','air cells','bony plate',
+            'bony plates','thin plates','attachment','anchor','anchors','tusks','trunk muscles',
+            'small brain','enormous','inside']],
+  [1,'vs', ['five kilo','5 kilo','five kilograms','solid plate','your skull','balanced',
+            'on top of a vertical','almost all the volume','our skull']],
+
+  [2,'out',['columnar','column','limbs','four legs','the legs','second structure',
+            'straight legs','vertical columns']],
+  [2,'in', ['compression','not bending','trabecular','marrow','packed','filled','crush',
+            'crushing','inside the bone','cross-section','cross section']],
+  [2,'vs', ['spring','bent','bend','hollow tube','running and jumping','elastic',
+            'store and return','your femur','our femur']],
+
+  [3,'out',['the foot','foot','feet','no bone touches','third structure','on tiptoe',
+            'tiptoe','walks on']],
+  [3,'in', ['cushion','collagen','chambers','pressure','divided by area','force divided',
+            'fat pad','the fat','spreads','increase the area','sole']],
+  [3,'vs', ['heel','calcaneus','thin pad','your foot','our foot','strikes the ground']],
+
+  [4,'out',['the knee','knee','fourth structure','last structure','joint','one eighty',
+            '180','nearly straight']],
+  [4,'in', ['screw-home','screw home','screwhome','sixteen','locks straight','locking',
+            'it locks','no muscle','costs no muscle']],
+  [4,'vs', ['ten degrees','10 degrees','menisci','meniscus','your knee','our knee',
+            'same solution','convergence','twice']],
+
+  [5,'out',['square','cube','double every','doubling','eight times','times eight',
+            'geometry','to close','finally','last thing','wrap up']],
+  [5,'in', ['three moves','remove','add bone','by choice','not a choice','forced',
+            'hundred times lighter','a hundred times']]
 ];
 
 /* ------------------------------------------------------------------ */
@@ -176,7 +195,15 @@ function heard(text){
     if(k<=here || k<=best) return;
     if(words.some(w=>t.includes(w))) best = k;
   });
-  if(best>-1) goTo(FLAT[best][0], FLAT[best][1]);
+  if(best>-1){ goTo(FLAT[best][0], FLAT[best][1]); flash(); }
+}
+
+/* a short pulse on the view chip, so he can see the voice was understood */
+function flash(){
+  const b = document.querySelector('#pbar .vw b.on');
+  if(!b) return;
+  b.style.transition = 'none'; b.style.boxShadow = '0 0 0 3px rgba(224,116,90,.85)';
+  setTimeout(()=>{ b.style.transition='box-shadow .5s ease'; b.style.boxShadow='none'; }, 90);
 }
 
 function mic(){
@@ -225,6 +252,10 @@ function leave(){
   if(typeof resize==='function') resize();
   reset();
 }
+
+/* a hook for checking the trigger words without a microphone:
+   open the console in Present mode and call  sayTest('...the skull...')  */
+window.sayTest = t => { heard(String(t).toLowerCase()); return SEQ[step].kicker+' / '+SEQ[step].views[view]; };
 
 btn.onclick   = ()=> on ? leave() : enter();
 $('pNext').onclick = ()=> move(1);
