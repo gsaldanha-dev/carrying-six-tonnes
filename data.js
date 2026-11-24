@@ -33,7 +33,7 @@ const ADAPTS = [
     cam: [-2.25, 2.60, 0, -3.9, 3.5, 3.4],
     humanCam: [-5.040,1.635,0.000, -5.410,1.875,0.541],
     humanParts: ['skull'],
-    humanLabels: [[-5.04,1.73,0,'cranium ≈5 kg',12,-16]],
+    humanLabels: [[-5.04,1.73,0,'head ≈5 kg, skull solid',12,-16]],
     note: "Three hundred kilograms of head, held out in front of a short neck and lightened by air cells. A human head is about five, its skull a solid plate, balanced on top of a vertical spine. The elephant brain is not small in itself — about 5 kg, among the largest of any land mammal — it simply fills very little of that skull.",
     terms: [['Pneumatised',0], ['300 kg of head',0], ['Human: 5 kg head, solid plate',1]],
     rule: 'Big for attachment, hollow for weight.',
