@@ -34,14 +34,14 @@ const ADAPTS = [
     humanCam: [-5.040,1.635,0.000, -5.410,1.875,0.541],
     humanParts: ['skull'],
     humanLabels: [[-5.04,1.73,0,'cranium ≈5 kg',12,-16]],
-    note: "Three hundred kilograms of head, held out in front of a short neck and lightened by air cells. A human skull is solid plate, weighs about five, and balances on top of a vertical spine.",
-    terms: [['Pneumatised',0], ['300 kg of head',0], ['Human: 5 kg, solid plate',1]],
+    note: "Three hundred kilograms of head, held out in front of a short neck and lightened by air cells. A human head is about five, its skull a solid plate, balanced on top of a vertical spine. The elephant brain is not small in itself — about 5 kg, among the largest of any land mammal — it simply fills very little of that skull.",
+    terms: [['Pneumatised',0], ['300 kg of head',0], ['Human: 5 kg head, solid plate',1]],
     rule: 'Big for attachment, hollow for weight.',
     labels: [
       [-2.24, 2.98, 0, 'pneumatised cranium', -130, -30],
       [-2.24, 2.62, 0.34, 'air cells in thin bony plates', 120, 0],
-      [-2.30, 2.40, 0, 'small brain, low and at the back', -150, 42],
-      [-5.04, 1.72, 0, 'human: solid plate, ~5 kg', -118, -26]
+      [-2.30, 2.40, 0, 'braincase small for the skull, low and at the back', -186, 42],
+      [-5.04, 1.72, 0, 'human head ~5 kg, skull a solid plate', -150, -26]
     ]
   },
   {
