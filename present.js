@@ -1,0 +1,244 @@
+/* ===================================================================
+   Present mode — four structures, renumbered 01 to 04, driven by voice.
+
+   Each structure has three views, one per strand of Criterion A:
+     out  the structure from outside
+     in   what is inside it  (skull: the 3D cutaway · others: the diagram)
+     vs   the human comparison
+
+   Speech recognition does two jobs at once: it writes the caption and it
+   moves the camera, so nothing has to be clicked while talking. Arrow keys
+   and the space bar always work as a fallback.
+   =================================================================== */
+(function () {
+
+const SEQ = [
+  { num: '—',  idx: null, kicker: 'Opening',      title: 'Two skeletons, one rule', views: ['out'] },
+  { num: '01', idx: 0,    kicker: 'Structure 01', title: 'The skull',        views: ['out','in','vs'] },
+  { num: '02', idx: 5,    kicker: 'Structure 02', title: 'Columnar limbs',   views: ['out','in','vs'], fig: 'fig/limbs.jpg' },
+  { num: '03', idx: 7,    kicker: 'Structure 03', title: 'The foot',         views: ['out','in','vs'], fig: 'fig/foot.jpg' },
+  { num: '04', idx: 6,    kicker: 'Structure 04', title: 'The knee',         views: ['out','in','vs'], fig: 'fig/knee.jpg' },
+  { num: '—',  idx: 10,   kicker: 'Close',        title: 'Why size forces it', views: ['out','in'],    fig: 'fig/scale.jpg' }
+];
+
+/* words that jump the talk forward. Only ever forward, never back, so a
+   word said in passing cannot drag the slide backwards mid-sentence. */
+const TRIG = [
+  [1,'in', ['attachment','anchor','anchors','tusks','trunk muscles','enormous']],
+  [1,'vs', ['five kilo','5 kilo','solid plate','your skull','balanced']],
+  [2,'out',['columnar','column','limbs','four legs']],
+  [2,'in', ['compression','trabecular','marrow','packed','filled','crush']],
+  [2,'vs', ['spring','bent','bend','hollow tube','running and jumping']],
+  [3,'out',['the foot','foot','no bone touches']],
+  [3,'in', ['cushion','collagen','pressure','divided by area','force divided']],
+  [3,'vs', ['heel','calcaneus','thin pad']],
+  [4,'out',['the knee','knee','screw']],
+  [4,'in', ['screw-home','screw home','sixteen','locks straight','lock']],
+  [4,'vs', ['ten degrees','menisci','your knee']],
+  [5,'out',['square','cube','double every','eight times','geometry']],
+  [5,'in', ['three moves','remove','add bone','by choice']]
+];
+
+/* ------------------------------------------------------------------ */
+const css = `
+.pbtn{font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:2.2px;
+  text-transform:uppercase;background:transparent;color:#F2EDE3;
+  border:1px solid rgba(242,237,227,.38);padding:8px 13px;cursor:pointer;white-space:nowrap}
+.pbtn:hover{border-color:#F2EDE3}
+.pbtn.on{background:var(--accent);border-color:var(--accent)}
+.band .rgt{display:flex;align-items:center;gap:20px}
+#figwrap{position:absolute;inset:14px 0 0 22px;display:none;align-items:center;
+  justify-content:center;background:var(--paper);padding:10px 16px 16px}
+#figwrap.on{display:flex;animation:figIn .5s ease both}
+#figwrap img{max-width:100%;max-height:100%;object-fit:contain;
+  box-shadow:0 2px 20px rgba(40,32,20,.13)}
+@keyframes figIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+#pbar{display:none;align-items:center;gap:18px;padding-top:9px;color:#F2EDE3}
+#pbar.on{display:flex}
+#pbar .st{flex:0 0 200px;min-width:0}
+#pbar .st .kk{font-size:10px;font-weight:700;letter-spacing:2.4px;
+  text-transform:uppercase;color:#8A8270}
+#pbar .st .tt{font-family:var(--display);font-weight:700;font-size:20px;
+  line-height:1.1;color:#FFF;margin-top:3px}
+#pbar .vw{display:flex;gap:6px;flex:0 0 auto}
+#pbar .vw b{font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:1.3px;
+  text-transform:uppercase;color:#8A8270;border:1px solid #3B352A;padding:8px 12px}
+#pbar .vw b.on{background:var(--accent);border-color:var(--accent);color:#FFF}
+#pbar .cap{flex:1 1 auto;min-width:0;font-size:17px;line-height:1.35;color:#E6DFCE;
+  max-height:46px;overflow:hidden}
+#pbar .cap i{font-style:normal;color:#8A8270}
+#pbar .nav{display:flex;gap:6px;flex:0 0 auto}
+#pbar .nav button{background:transparent;border:1px solid #3B352A;color:#F2EDE3;
+  font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;padding:9px 13px;cursor:pointer}
+#pbar .nav button:hover{border-color:#7E7462}
+#pbar .nav button.mic.on{background:#8C2F1B;border-color:#8C2F1B}
+#ppips{display:flex;gap:4px;margin-top:9px}
+#ppips i{flex:1 1 0;height:4px;background:#3B352A}
+#ppips i.on{background:var(--accent)}
+#ppips i.past{background:#6E6354}
+@media (prefers-reduced-motion:reduce){#figwrap.on{animation:none}}
+`;
+const st = document.createElement('style'); st.textContent = css;
+document.head.appendChild(st);
+
+/* ---- markup ------------------------------------------------------- */
+const band = document.querySelector('.band');
+const r = band.querySelector('.r');
+const rgt = document.createElement('div'); rgt.className = 'rgt';
+band.replaceChild(rgt, r); rgt.appendChild(r);
+const btn = document.createElement('button');
+btn.className = 'pbtn'; btn.id = 'pres'; btn.textContent = 'Present';
+rgt.appendChild(btn);
+
+const figwrap = document.createElement('div');
+figwrap.id = 'figwrap'; figwrap.innerHTML = '<img alt="">';
+document.getElementById('stage').appendChild(figwrap);
+
+const foot = document.querySelector('footer');
+const wrap = document.createElement('div');
+wrap.innerHTML =
+  '<div id="pbar">' +
+    '<div class="st"><div class="kk" id="pK"></div><div class="tt" id="pT"></div></div>' +
+    '<div class="vw"><b data-v="out">Outside</b><b data-v="in">Inside</b><b data-v="vs">Human</b></div>' +
+    '<div class="cap" id="pCap"><i>Press Listen, then talk. The slide follows what you say.</i></div>' +
+    '<div class="nav">' +
+      '<button class="mic" id="pMic">Listen</button>' +
+      '<button id="pPrev">&#8592;</button><button id="pNext">&#8594;</button>' +
+      '<button id="pEnd">Exit</button>' +
+    '</div>' +
+  '</div><div id="ppips" style="display:none"></div>';
+while (wrap.firstChild) foot.appendChild(wrap.firstChild);
+
+const $ = id => document.getElementById(id);
+const rail = $('rail');
+
+/* ---- camera helper: same target, pushed in or swung round ---------- */
+function cam(c, scale, dTh, dPh){
+  const dx=c[3]-c[0], dy=c[4]-c[1], dz=c[5]-c[2], rr=Math.hypot(dx,dy,dz);
+  const th=Math.atan2(dx,dz)+(dTh||0);
+  const ph=Math.max(.25, Math.min(1.45, Math.acos(Math.max(-1,Math.min(1,dy/rr)))+(dPh||0)));
+  const R=rr*(scale||1);
+  return [c[0],c[1],c[2],
+          c[0]+R*Math.sin(ph)*Math.sin(th),
+          c[1]+R*Math.cos(ph),
+          c[2]+R*Math.sin(ph)*Math.cos(th)];
+}
+
+/* ---- state -------------------------------------------------------- */
+let on=false, step=0, view=0, rec=null, listening=false, said='';
+
+function flat(){ const a=[]; SEQ.forEach((s,i)=>s.views.forEach((v,j)=>a.push([i,j]))); return a; }
+const FLAT = flat();
+const posOf = (i,j) => FLAT.findIndex(p=>p[0]===i&&p[1]===j);
+
+function pips(){
+  const here = posOf(step,view);
+  $('ppips').innerHTML = FLAT.map((p,k)=>
+    '<i class="'+(k===here?'on':(k<here?'past':''))+'"></i>').join('');
+}
+
+function render(){
+  const s = SEQ[step], v = s.views[view];
+  $('pK').textContent = s.kicker;
+  $('pT').textContent = s.title;
+  document.querySelectorAll('#pbar .vw b').forEach(b=>
+    b.classList.toggle('on', b.dataset.v===v));
+
+  const showFig = (v==='in' && s.fig);
+  figwrap.classList.toggle('on', !!showFig);
+  if(showFig) figwrap.querySelector('img').src = s.fig;
+
+  if(s.idx===null){ reset(); }
+  else {
+    const a = ADAPTS[s.idx], c = a.cam;
+    if(v==='out')      pick(s.idx,{cam:cam(c,1.85,-.34,-.07), cut:false, lbl:[0,1], inset:false});
+    else if(v==='in')  pick(s.idx,{cam:cam(c,0.80,.20,.12),   cut:true,  lbl:[1,2], inset:false});
+    else               pick(s.idx,{cam:cam(c,2.10,.05,-.05),  cut:true,  lbl:[2,3], inset:false});
+    $('num').textContent = s.num;
+  }
+  pips();
+}
+
+function goTo(i,j){ step=i; view=j; render(); }
+function move(d){
+  const k = Math.max(0, Math.min(FLAT.length-1, posOf(step,view)+d));
+  goTo(FLAT[k][0], FLAT[k][1]);
+}
+
+/* ---- speech ------------------------------------------------------- */
+function heard(text){
+  const t = text.toLowerCase();
+  const here = posOf(step,view);
+  let best = -1;
+  TRIG.forEach(([i,v,words])=>{
+    const k = posOf(i, SEQ[i].views.indexOf(v));
+    if(k<=here || k<=best) return;
+    if(words.some(w=>t.includes(w))) best = k;
+  });
+  if(best>-1) goTo(FLAT[best][0], FLAT[best][1]);
+}
+
+function mic(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ $('pCap').innerHTML = '<i>This browser has no speech recognition. Use the arrow keys.</i>'; return; }
+  if(listening){ listening=false; rec && rec.stop(); $('pMic').classList.remove('on');
+    $('pMic').textContent='Listen'; return; }
+  rec = new SR();
+  rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
+  rec.onresult = e => {
+    let fin='', int='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r0=e.results[i];
+      if(r0.isFinal) fin += r0[0].transcript; else int += r0[0].transcript;
+    }
+    if(fin){ said=(said+' '+fin).slice(-400); heard(fin); }
+    const show=(said+' '+int).trim().slice(-170);
+    $('pCap').textContent = show || '…';
+    if(int) heard(int);
+  };
+  rec.onerror = ev => {
+    $('pCap').innerHTML = '<i>Microphone: '+ev.error+'. The arrow keys still work.</i>';
+    listening=false; $('pMic').classList.remove('on'); $('pMic').textContent='Listen';
+  };
+  rec.onend = () => { if(listening){ try{ rec.start(); }catch(e){} } };
+  try { rec.start(); listening=true; $('pMic').classList.add('on'); $('pMic').textContent='Stop'; }
+  catch(e){ $('pCap').innerHTML = '<i>Could not start the microphone.</i>'; }
+}
+
+/* ---- enter / leave ------------------------------------------------ */
+function enter(){
+  on=true; btn.classList.add('on');
+  rail.style.display='none';
+  $('pbar').classList.add('on'); $('ppips').style.display='flex';
+  document.querySelector('.hint').textContent='Talk, or use ← →';
+  if(typeof resize==='function') resize();
+  goTo(0,0);
+}
+function leave(){
+  on=false; btn.classList.remove('on');
+  if(listening) mic();
+  rail.style.display='';
+  $('pbar').classList.remove('on'); $('ppips').style.display='none';
+  figwrap.classList.remove('on');
+  document.querySelector('.hint').textContent='Drag to turn · ← → for each structure';
+  if(typeof resize==='function') resize();
+  reset();
+}
+
+btn.onclick   = ()=> on ? leave() : enter();
+$('pNext').onclick = ()=> move(1);
+$('pPrev').onclick = ()=> move(-1);
+$('pEnd').onclick  = leave;
+$('pMic').onclick  = mic;
+
+addEventListener('keydown', e=>{
+  if(!on) return;
+  if(e.target.tagName==='BUTTON' && e.code==='Space') return;
+  if(e.code==='Space'){ e.preventDefault(); move(1); }
+  else if(e.key==='ArrowRight'){ e.stopImmediatePropagation(); move(1); }
+  else if(e.key==='ArrowLeft'){ e.stopImmediatePropagation(); move(-1); }
+  else if(e.key==='Escape'){ leave(); }
+}, true);
+
+})();
