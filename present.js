@@ -60,82 +60,33 @@ const TRIG = [
 
 /* ------------------------------------------------------------------ */
 const css = `
-.pbtn{font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:2.2px;
-  text-transform:uppercase;background:transparent;color:#F2EDE3;
-  border:1px solid rgba(242,237,227,.38);padding:8px 13px;cursor:pointer;white-space:nowrap}
-.pbtn:hover{border-color:#F2EDE3}
-.pbtn.on{background:var(--accent);border-color:var(--accent)}
-.band .rgt{display:flex;align-items:center;gap:20px}
-#figwrap{position:absolute;inset:14px 0 0 22px;display:none;align-items:center;
-  justify-content:center;background:var(--paper);padding:10px 16px 16px}
-#figwrap.on{display:flex;animation:figIn .5s ease both}
-#figwrap img{max-width:100%;max-height:100%;object-fit:contain;
-  box-shadow:0 2px 20px rgba(40,32,20,.13)}
-@keyframes figIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
-#pbar{display:none;align-items:center;gap:18px;padding-top:9px;color:#F2EDE3}
-#pbar.on{display:flex}
-#pbar .st{flex:0 0 200px;min-width:0}
-#pbar .st .kk{font-size:10px;font-weight:700;letter-spacing:2.4px;
-  text-transform:uppercase;color:#8A8270}
-#pbar .st .tt{font-family:var(--display);font-weight:700;font-size:20px;
-  line-height:1.1;color:#FFF;margin-top:3px}
-#pbar .vw{display:flex;gap:6px;flex:0 0 auto}
-#pbar .vw b{font-family:var(--ui);font-size:10px;font-weight:700;letter-spacing:1.3px;
-  text-transform:uppercase;color:#8A8270;border:1px solid #3B352A;padding:8px 12px}
-#pbar .vw b.on{background:var(--accent);border-color:var(--accent);color:#FFF}
-#pbar .cap{flex:1 1 auto;min-width:0;font-size:17px;line-height:1.35;color:#E6DFCE;
-  max-height:46px;overflow:hidden}
-#pbar .cap i{font-style:normal;color:#8A8270}
-#pbar .nav{display:flex;gap:6px;flex:0 0 auto}
-#pbar .nav button{background:transparent;border:1px solid #3B352A;color:#F2EDE3;
-  font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:1.5px;
-  text-transform:uppercase;padding:9px 13px;cursor:pointer}
-#pbar .nav button:hover{border-color:#7E7462}
-#pbar .nav button.mic.on{background:#8C2F1B;border-color:#8C2F1B}
-#ppips{position:relative;height:26px;margin-top:10px}
-#ppips .ax{position:absolute;left:0;right:0;top:13px;height:2px;background:#3B352A}
-#ppips .tk{position:absolute;top:8px;width:2px;height:12px;background:#6E6354}
-#ppips .lb{position:absolute;top:0;font-size:9.5px;font-weight:700;letter-spacing:1.6px;
-  text-transform:uppercase;color:#6E6354;transform:translateX(-50%);white-space:nowrap}
-#ppips .you{position:absolute;top:4px;height:20px;border:1.5px solid var(--accent);
-  background:rgba(156,59,35,.22);transition:left .5s ease, width .5s ease}
-
-@media (prefers-reduced-motion:reduce){#figwrap.on{animation:none}}
+#pbar{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
+  max-width:min(74%,980px);padding:11px 26px;border-radius:5px;
+  background:rgba(26,24,20,.86);pointer-events:none;opacity:0;
+  transition:opacity .25s ease;z-index:6}
+#pbar.show{opacity:1}
+#pbar .cap{font-size:20px;line-height:1.32;color:#F4F0E7;text-align:center;
+  max-height:56px;overflow:hidden}
+#pbar .cap i{font-style:normal;color:#9A9382;font-size:15px}
 `;
 const st = document.createElement('style'); st.textContent = css;
 document.head.appendChild(st);
 
 /* ---- markup ------------------------------------------------------- */
-const band = document.querySelector('.band');
-const r = band.querySelector('.r');
-const rgt = document.createElement('div'); rgt.className = 'rgt';
-band.replaceChild(rgt, r); rgt.appendChild(r);
-const btn = document.createElement('button');
-btn.className = 'pbtn'; btn.id = 'pres'; btn.textContent = 'Whole slide';
-rgt.appendChild(btn);
 
-const figwrap = document.createElement('div');
-figwrap.id = 'figwrap'; figwrap.innerHTML = '<img alt="">';
-document.getElementById('stage').appendChild(figwrap);
-
-const foot = document.querySelector('footer');
-const wrap = document.createElement('div');
-wrap.innerHTML =
-  '<div id="pbar">' +
-    '<div class="st"><div class="kk" id="pK"></div><div class="tt" id="pT"></div></div>' +
-    '<div class="vw"><b data-v="out">Outside</b><b data-v="in">Inside</b><b data-v="vs">Human</b></div>' +
-    '<div class="cap" id="pCap"><i>Press Listen, then talk. The slide follows what you say.</i></div>' +
-    '<div class="nav">' +
-      '<button class="mic" id="pMic">Listen</button>' +
-      '<button id="pCopy">Copy talk</button>' +
-      '<button id="pWhole">Whole slide</button>' +
-      '<button id="pPrev">&#8592;</button><button id="pNext">&#8594;</button>' +
-    '</div>' +
-  '</div><div id="ppips" style="display:none"></div>';
-while (wrap.firstChild) foot.appendChild(wrap.firstChild);
+const bar = document.createElement('div');
+bar.id = 'pbar';
+bar.innerHTML = '<div class="cap" id="pCap"></div>';
+document.getElementById('stage').appendChild(bar);
 
 const $ = id => document.getElementById(id);
-const rail = $('rail');
+
+/* the caption shows itself only while there is something to read */
+function say(html){
+  const c = $('pCap'), b = $('pbar');
+  c.innerHTML = html || '';
+  b.classList.toggle('show', !!html);
+}
 
 /* ---- camera helper: same target, pushed in or swung round ---------- */
 function cam(c, scale, dTh, dPh){
@@ -173,7 +124,7 @@ const BOARDS = [
   { fig:'fig/knee.jpg',  x: 0.70 },
   { fig:'fig/scale.jpg', x: 4.20 }
 ];
-const BW = 2.60, BH = 1.37, BY = 3.05, BZ = -5.40;
+const BW = 2.60, BH = 1.37, BY = 3.70, BZ = -7.30;
 const boardOf = {};
 (function buildBoards(){
   if(typeof THREE==='undefined' || typeof scene==='undefined') return;
@@ -201,6 +152,9 @@ const boardOf = {};
     boardOf[b.fig] = g;
   });
 })();
+/* the school crest on the back wall: the front face carries the artwork,
+   and a stack of silhouettes behind it gives the badge real thickness */
+
 function boardCam(fig){
   const b = BOARDS.find(x=>x.fig===fig);
   return [b.x, BY, BZ,  b.x, BY + 0.05, BZ + 3.05];
@@ -226,7 +180,7 @@ const pc = x => ((x - X0) / (X1 - X0)) * 100;
 const MARKS = [[-5.05,'Homo sapiens'], [-2.25,'skull'], [-1.42,'foot'],
                [-0.20,'limbs'], [1.66,'knee']];
 
-function pips(){
+function pips(){ if(!$('ppips')) return;
   const s0 = SEQ[step];
   let lo, hi;
   if(s0.idx===null || s0.idx===10){ lo = 0; hi = 100; }
@@ -244,10 +198,6 @@ function pips(){
 
 function render(){
   const s = SEQ[step], v = s.views[view];
-  $('pK').textContent = s.kicker;
-  $('pT').textContent = s.title;
-  document.querySelectorAll('#pbar .vw b').forEach(b=>
-    b.classList.toggle('on', b.dataset.v===v));
 
   const onBoard = (v==='in' && s.fig);
 
@@ -263,7 +213,7 @@ function render(){
     else               pick(s.idx,{cam:both(a),               cut:open,  lbl:[2,3], inset:false});
     $('num').textContent = s.num;
   }
-  pips();
+
 }
 
 function goTo(i,j){ step=i; view=j; render(); }
@@ -286,18 +236,17 @@ function heard(text){
 }
 
 /* a short pulse on the view chip, so he can see the voice was understood */
+/* a brief glow on the caption, so he can see the voice was understood */
 function flash(){
-  const b = document.querySelector('#pbar .vw b.on');
-  if(!b) return;
-  b.style.transition = 'none'; b.style.boxShadow = '0 0 0 3px rgba(224,116,90,.85)';
-  setTimeout(()=>{ b.style.transition='box-shadow .5s ease'; b.style.boxShadow='none'; }, 90);
+  const c = $('pCap'); if(!c) return;
+  c.style.transition = 'none'; c.style.color = '#E0745A';
+  setTimeout(()=>{ c.style.transition='color .6s ease'; c.style.color=''; }, 90);
 }
 
 function mic(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ $('pCap').innerHTML = '<i>This browser has no speech recognition. Use the arrow keys.</i>'; return; }
-  if(listening){ listening=false; rec && rec.stop(); $('pMic').classList.remove('on');
-    $('pMic').textContent='Listen'; return; }
+  if(!SR){ say('<i>This browser has no speech recognition. Use the arrow keys.</i>'); return; }
+  if(listening){ listening=false; rec && rec.stop(); say(''); return; }
   rec = new SR();
   rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
   rec.onresult = e => {
@@ -312,25 +261,23 @@ function mic(){
       heard(fin);
     }
     const show=(said+' '+int).trim().slice(-170);
-    $('pCap').textContent = show || '…';
+    say(show);
     if(int) heard(int);
   };
   rec.onerror = ev => {
-    $('pCap').innerHTML = '<i>Microphone: '+ev.error+'. The arrow keys still work.</i>';
-    listening=false; $('pMic').classList.remove('on'); $('pMic').textContent='Listen';
+    say('<i>Microphone: '+ev.error+'. The arrow keys still work.</i>');
+    listening=false;
   };
   rec.onend = () => { if(listening){ try{ rec.start(); }catch(e){} } };
   try { rec.start(); listening=true; log=[]; t0=Date.now();
-        $('pMic').classList.add('on'); $('pMic').textContent='Stop'; }
-  catch(e){ $('pCap').innerHTML = '<i>Could not start the microphone.</i>'; }
+      }
+  catch(e){ listening = false; }   /* no microphone here: the keys still work */
 }
 
 /* ---- enter / leave ------------------------------------------------ */
 function enter(){
-  on=true; btn.classList.add('on');
-  rail.style.display='none';
-  $('pbar').classList.add('on'); $('ppips').style.display='flex';
-  document.querySelector('.hint').textContent='One slide · ← → moves the camera over it · 0 shows all of it';
+  on=true;
+    document.querySelector('.hint').textContent='One slide · ← → moves the camera over it · 0 shows all of it';
   if(typeof resize==='function') resize();
   goTo(0,0);
 }
@@ -340,19 +287,19 @@ function enter(){
    open the console in Present mode and call  sayTest('...the skull...')  */
 window.sayTest = t => { heard(String(t).toLowerCase()); return SEQ[step].kicker+' / '+SEQ[step].views[view]; };
 
-btn.onclick   = ()=> goTo(0,0);
-$('pNext').onclick = ()=> move(1);
-$('pPrev').onclick = ()=> move(-1);
-$('pWhole').onclick = ()=> goTo(0,0);
-$('pMic').onclick  = mic;
 
-$('pCopy').onclick = async () => {
-  if(!log.length){ $('pCap').innerHTML = '<i>Nothing recorded yet — press Listen first.</i>'; return; }
+
+
+
+
+
+const copyTalk = async () => {
+  if(!log.length){ say('<i>Nothing recorded yet — press Listen first.</i>'); return; }
   const text = 'Rehearsal — ' + new Date().toLocaleString() + '\n' +
                'Total ' + stamp() + '\n\n' + log.join('\n');
   try {
     await navigator.clipboard.writeText(text);
-    $('pCap').innerHTML = '<i>Copied — ' + log.length + ' lines, ' + stamp() + '. Paste it to Claude.</i>';
+    say('<i>Copied — ' + log.length + ' lines, ' + stamp() + '. Paste it to Claude.</i>');
   } catch (e) {
     document.getElementById('ptxt')?.remove();
     const box = document.createElement('div');
@@ -369,12 +316,23 @@ $('pCopy').onclick = async () => {
       'font:700 11px/1 sans-serif;letter-spacing:1.5px;text-transform:uppercase;padding:10px 16px;cursor:pointer';
     close.onclick = () => box.remove();
     box.append(ta, close); document.body.appendChild(box); ta.select();
-    $('pCap').innerHTML = '<i>Clipboard blocked — select the text and copy it by hand.</i>';
+    say('<i>Clipboard blocked — select the text and copy it by hand.</i>');
   }
 };
 
+let armed = false;
+function armMic(){ if(armed || listening) return; armed = true; try{ mic(); }catch(e){} }
+
 addEventListener('keydown', e=>{
   if(!on) return;
+  armMic();
+  if(e.key==='f'||e.key==='F'){
+    e.preventDefault();
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+    return;
+  }
+  if(e.key==='c'||e.key==='C'){ e.preventDefault(); copyTalk(); return; }
   if(e.target.tagName==='BUTTON' && e.code==='Space') return;
   if(e.code==='Space'){ e.preventDefault(); move(1); }
   else if(e.key==='ArrowRight'){ e.stopImmediatePropagation(); move(1); }
@@ -385,5 +343,9 @@ addEventListener('keydown', e=>{
 
 /* there is only one mode: the slide, open from the first frame */
 enter();
+/* try the microphone straight away; browsers that want a gesture first
+   get one from the first key press or click */
+setTimeout(()=>{ try{ mic(); }catch(e){} }, 600);
+addEventListener('pointerdown', armMic, true);
 
 })();

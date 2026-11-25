@@ -55,6 +55,8 @@
   .ilb{position:absolute;font-size:10.5px;font-weight:600;line-height:1.25;
     color:#201C16;white-space:nowrap;padding:1px 5px 2px;
     background:rgba(231,224,206,.92);border-bottom:2px solid var(--accent)}
+  .cred{position:absolute;left:24px;bottom:4px;font-size:9.5px;font-weight:600;
+    letter-spacing:1.8px;text-transform:uppercase;color:#B6AD99}
   .hint{position:absolute;right:22px;bottom:4px;font-size:9.5px;font-weight:500;
     letter-spacing:1.8px;text-transform:uppercase;color:#B6AD99}
 
@@ -88,7 +90,6 @@
     line-height:1.26;color:var(--ink)}
 
   /* ---------------- chapter rail ---------------- */
-  footer{flex:0 0 auto;background:var(--ink);color:#F2EDE3;padding:0 30px 12px}
   .rail{display:flex;gap:5px;align-items:stretch}
   .seg{flex:1 1 0;min-width:0;cursor:pointer;padding:11px 9px 9px;
     border-top:5px solid #3B352A;transition:.18s}
@@ -105,11 +106,6 @@
 <body>
 <div id="page">
 
-  <div class="band">
-    <div class="t">Carrying six tonnes<em>form and function in the elephant skeleton</em></div>
-    <div class="r">Gustavo Arias Saldanha</div>
-  </div>
-
   <main>
     <div id="stage">
       <svg id="leads"></svg>
@@ -120,6 +116,7 @@
       <div id="ilbls"></div>
       <div id="inset"><span class="icap">Homo sapiens</span><span class="ipart" id="ipart"></span></div>
       <span class="hint">Drag to turn · ← → for each structure</span>
+      <span class="cred" id="cred">Gustavo Arias Saldanha</span>
     </div>
 
     <aside>
@@ -135,7 +132,6 @@
     </aside>
   </main>
 
-  <footer><div class="rail" id="rail"></div></footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
@@ -144,8 +140,8 @@
 <script>
 /* ?full=1 restores the full credit line for presenting */
 if(new URLSearchParams(location.search).has('full')){
-  document.querySelector('.band .r').innerHTML =
-    'Gustavo Arias Saldanha<br>MYP Year 3 \u00b7 Sciences \u00b7 Criterion A';
+  document.getElementById('cred').textContent =
+    'Gustavo Arias Saldanha \u00b7 MYP Year 3 \u00b7 Sciences \u00b7 Criterion A';
 }
 const PARTS = {
   skull:['skull'], teeth:['teeth'], spine:['vert','spine','rib'],
@@ -366,11 +362,6 @@ function reset(){
   setInsetLabels([]);
 }
 
-const rail=document.getElementById('rail');
-rail.innerHTML = ADAPTS.map((a,i)=>
-  `<div class="seg" data-i="${i}"><span class="k">${String(a.n).padStart(2,'0')}</span>`+
-  `<span class="s">${a.short}</span></div>`).join('');
-rail.querySelectorAll('.seg').forEach(n=>n.addEventListener('click',()=>pick(+n.dataset.i)));
 document.getElementById('src').textContent =
   'Sources — ' + SOURCES.map(s=>s[0]+' ('+s[1]+')').join(' · ');
 
