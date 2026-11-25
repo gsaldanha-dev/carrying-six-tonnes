@@ -105,6 +105,35 @@ function grain() {
   return t;
 }
 
+/* muscle reads as muscle only if the fibres run somewhere: long streaks
+   along one axis, broken up so they do not look like corduroy        */
+function fibre() {
+  const W = 128, H = 512, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#9a9a9a'; ctx.fillRect(0, 0, W, H);
+  let s = 11; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let n = 0; n < 150; n++) {
+    const x = rnd() * W, w = 0.6 + rnd() * 2.2;
+    const y0 = rnd() * H, len = H * (0.25 + rnd() * 0.7);
+    const g = ctx.createLinearGradient(0, y0, 0, y0 + len);
+    const tone = rnd() < 0.5 ? 255 : 0, a = 0.05 + rnd() * 0.16;
+    g.addColorStop(0, 'rgba(' + tone + ',' + tone + ',' + tone + ',0)');
+    g.addColorStop(0.5, 'rgba(' + tone + ',' + tone + ',' + tone + ',' + a + ')');
+    g.addColorStop(1, 'rgba(' + tone + ',' + tone + ',' + tone + ',0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y0, w, len);
+  }
+  /* a few wider bands, so the belly looks built of bundles */
+  for (let n = 0; n < 9; n++) {
+    ctx.fillStyle = 'rgba(0,0,0,' + (0.05 + rnd() * 0.07) + ')';
+    ctx.fillRect(rnd() * W, 0, 3 + rnd() * 5, H);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 1);
+  return t;
+}
+
 /* ================================================================= */
 const MATS = {};
 function makeMaterials() {
@@ -126,13 +155,18 @@ function makeMaterials() {
   });
   MATS.pad = new THREE.MeshStandardMaterial({ color: 0xC6A484, roughness: 0.95, roughnessMap: g });
   MATS.cart = new THREE.MeshStandardMaterial({ color: 0xA88058, roughness: 0.90 });
+  const fb = fibre();
   MATS.muscle = new THREE.MeshStandardMaterial({
-    color: 0xB8694F, roughness: 0.72, transparent: true, opacity: 0.58,
-    depthWrite: false
+    color: 0xA8553E, roughness: 0.58, transparent: true, opacity: 0.94,
+    roughnessMap: fb, bumpMap: fb, bumpScale: 0.022, flatShading: false
+  });
+  MATS.muscleDeep = new THREE.MeshStandardMaterial({
+    color: 0x8E4234, roughness: 0.62, transparent: true, opacity: 0.94,
+    roughnessMap: fb, bumpMap: fb, bumpScale: 0.022, flatShading: false
   });
   MATS.tendon = new THREE.MeshStandardMaterial({
-    color: 0xE4DAC6, roughness: 0.42, transparent: true, opacity: 0.80,
-    depthWrite: false
+    color: 0xE7DEC9, roughness: 0.30, transparent: true, opacity: 0.96,
+    roughnessMap: g, bumpMap: g, bumpScale: 0.003
   });
   MATS.ghost = new THREE.MeshStandardMaterial({
     color: 0xE6DFD2, roughness: 0.95, transparent: true, opacity: 0.12, depthWrite: false
@@ -301,27 +335,27 @@ function buildElephant() {
   /* nuchal ligament: the elastic sheet that carries 300 kg of head,
      anchored on exactly the tall neural spines labelled above      */
   soft(G, taper([
-    V(-1.95, 2.72, 0), V(-1.62, 3.14, 0), V(-1.19, 3.36, 0),
-    V(-0.52, 3.22, 0), V(0.22, 3.02, 0)
-  ], 0.075, 0.042, 0, 40, 12, [1, 0.55, 1.6]), MATS.muscle);
+    V(-1.95, 2.72, 0), V(-1.62, 3.14, 0), V(-1.19, 3.34, 0),
+    V(-0.52, 3.20, 0), V(0.22, 3.00, 0)
+  ], 0.090, 0.046, 0, 64, 26, [1, 0.42, 1.9]), MATS.muscleDeep);
 
   [1, -1].forEach(s2 => {
-    /* forelimb: a deep belly over scapula and humerus … */
-    soft(G, taper([
-      V(-1.28, 2.78, s2 * EZ), V(-1.38, 2.22, s2 * EZ), V(-1.45, 1.46, s2 * EZ)
-    ], 0.33, 0.11, 0, 34, 14, [1, 1, 0.78]), MATS.muscle);
-    /* … and almost nothing below the elbow but tendon */
-    soft(G, taper([
-      V(-1.45, 1.34, s2 * EZ), V(-1.43, 0.94, s2 * EZ), V(-1.42, 0.56, s2 * EZ)
-    ], 0.072, 0.046, 0, 18, 10, [1, 1, 0.9]), MATS.tendon);
+    /* forelimb: three spindle bellies, closed volumes, not open tubes */
+    soft(G, ellipsoid(-1.31, 2.56, s2 * (EZ + 0.05), 0.215, 0.350, 0.165, 30), MATS.muscle);
+    soft(G, ellipsoid(-1.34, 1.96, s2 * (EZ + 0.03), 0.150, 0.360, 0.130, 30), MATS.muscleDeep);
+    soft(G, ellipsoid(-1.53, 1.90, s2 * (EZ - 0.05), 0.105, 0.330, 0.098, 28), MATS.muscle);
 
-    /* hindlimb: the same pattern */
-    soft(G, taper([
-      V(1.72, 2.70, s2 * EZ), V(1.74, 2.08, s2 * EZ), V(1.62, 1.52, s2 * EZ)
-    ], 0.31, 0.11, 0, 34, 14, [1, 1, 0.80]), MATS.muscle);
-    soft(G, taper([
-      V(1.66, 1.38, s2 * EZ), V(1.66, 0.94, s2 * EZ), V(1.67, 0.56, s2 * EZ)
-    ], 0.068, 0.044, 0, 18, 10, [1, 1, 0.9]), MATS.tendon);
+    /* below the elbow: two long cords and nothing else */
+    soft(G, ellipsoid(-1.45, 0.96, s2 * (EZ - 0.05), 0.046, 0.400, 0.042, 24), MATS.tendon);
+    soft(G, ellipsoid(-1.37, 0.96, s2 * (EZ + 0.07), 0.038, 0.400, 0.035, 24), MATS.tendon);
+
+    /* hindlimb: gluteal over the ilium, then front and back of the femur */
+    soft(G, ellipsoid(1.73, 2.56, s2 * (EZ + 0.04), 0.215, 0.280, 0.168, 30), MATS.muscle);
+    soft(G, ellipsoid(1.64, 1.96, s2 * (EZ - 0.05), 0.140, 0.395, 0.122, 30), MATS.muscle);
+    soft(G, ellipsoid(1.83, 1.96, s2 * (EZ + 0.05), 0.128, 0.375, 0.112, 30), MATS.muscleDeep);
+
+    soft(G, ellipsoid(1.65, 0.98, s2 * (EZ - 0.05), 0.043, 0.395, 0.039, 24), MATS.tendon);
+    soft(G, ellipsoid(1.74, 0.98, s2 * (EZ + 0.07), 0.036, 0.395, 0.033, 24), MATS.tendon);
   });
 
   return G;
@@ -395,17 +429,10 @@ function buildHuman() {
 
   /* ---- muscle: a human keeps a muscle belly low on the leg ---- */
   [1, -1].forEach(s2 => {
-    soft(G, taper([                                   // thigh
-      V(0.016, 0.890, s2 * 0.072), V(0.010, 0.700, s2 * 0.082),
-      V(0.000, 0.515, s2 * 0.096)
-    ], 0.082, 0.040, 0, 24, 12, [1, 1, 0.80]), MATS.muscle);
-    soft(G, taper([                                   // calf: the contrast
-      V(-0.006, 0.462, s2 * 0.100), V(-0.016, 0.350, s2 * 0.104),
-      V(-0.006, 0.170, s2 * 0.098)
-    ], 0.050, 0.016, 0, 22, 12, [1, 1, 0.84]), MATS.muscle);
-    soft(G, taper([                                   // achilles
-      V(-0.008, 0.180, s2 * 0.098), V(0.004, 0.062, s2 * 0.100)
-    ], 0.014, 0.011, 0, 10, 8), MATS.tendon);
+    soft(G, ellipsoid(-0.004, 0.700, s2 * 0.080, 0.056, 0.190, 0.050, 26), MATS.muscle);
+    soft(G, ellipsoid( 0.036, 0.700, s2 * 0.084, 0.042, 0.180, 0.038, 24), MATS.muscleDeep);
+    soft(G, ellipsoid(-0.014, 0.330, s2 * 0.102, 0.045, 0.140, 0.041, 26), MATS.muscle);
+    soft(G, ellipsoid( 0.000, 0.132, s2 * 0.099, 0.014, 0.078, 0.013, 18), MATS.tendon);
   });
 
   G.position.x = -5.05;
