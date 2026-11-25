@@ -13,7 +13,7 @@
 (function () {
 
 const SEQ = [
-  { num: '—',  idx: null, kicker: 'Opening',      title: 'Two skeletons, one rule', views: ['out'] },
+  { num: '—',  idx: null, kicker: 'The whole slide', title: 'Two skeletons, one rule', views: ['out'] },
   { num: '01', idx: 0,    kicker: 'Structure 01', title: 'The skull',        views: ['out','in','vs'] },
   { num: '02', idx: 5,    kicker: 'Structure 02', title: 'Columnar limbs',   views: ['out','in','vs'], fig: 'fig/limbs.jpg' },
   { num: '03', idx: 7,    kicker: 'Structure 03', title: 'The foot',         views: ['out','in','vs'], fig: 'fig/foot.jpg' },
@@ -92,10 +92,14 @@ const css = `
   text-transform:uppercase;padding:9px 13px;cursor:pointer}
 #pbar .nav button:hover{border-color:#7E7462}
 #pbar .nav button.mic.on{background:#8C2F1B;border-color:#8C2F1B}
-#ppips{display:flex;gap:4px;margin-top:9px}
-#ppips i{flex:1 1 0;height:4px;background:#3B352A}
-#ppips i.on{background:var(--accent)}
-#ppips i.past{background:#6E6354}
+#ppips{position:relative;height:26px;margin-top:10px}
+#ppips .ax{position:absolute;left:0;right:0;top:13px;height:2px;background:#3B352A}
+#ppips .tk{position:absolute;top:8px;width:2px;height:12px;background:#6E6354}
+#ppips .lb{position:absolute;top:0;font-size:9.5px;font-weight:700;letter-spacing:1.6px;
+  text-transform:uppercase;color:#6E6354;transform:translateX(-50%);white-space:nowrap}
+#ppips .you{position:absolute;top:4px;height:20px;border:1.5px solid var(--accent);
+  background:rgba(156,59,35,.22);transition:left .5s ease, width .5s ease}
+
 @media (prefers-reduced-motion:reduce){#figwrap.on{animation:none}}
 `;
 const st = document.createElement('style'); st.textContent = css;
@@ -107,7 +111,7 @@ const r = band.querySelector('.r');
 const rgt = document.createElement('div'); rgt.className = 'rgt';
 band.replaceChild(rgt, r); rgt.appendChild(r);
 const btn = document.createElement('button');
-btn.className = 'pbtn'; btn.id = 'pres'; btn.textContent = 'Present';
+btn.className = 'pbtn'; btn.id = 'pres'; btn.textContent = 'Whole slide';
 rgt.appendChild(btn);
 
 const figwrap = document.createElement('div');
@@ -124,8 +128,8 @@ wrap.innerHTML =
     '<div class="nav">' +
       '<button class="mic" id="pMic">Listen</button>' +
       '<button id="pCopy">Copy talk</button>' +
+      '<button id="pWhole">Whole slide</button>' +
       '<button id="pPrev">&#8592;</button><button id="pNext">&#8594;</button>' +
-      '<button id="pEnd">Exit</button>' +
     '</div>' +
   '</div><div id="ppips" style="display:none"></div>';
 while (wrap.firstChild) foot.appendChild(wrap.firstChild);
@@ -173,10 +177,27 @@ function flat(){ const a=[]; SEQ.forEach((s,i)=>s.views.forEach((v,j)=>a.push([i
 const FLAT = flat();
 const posOf = (i,j) => FLAT.findIndex(p=>p[0]===i&&p[1]===j);
 
+/* a map of the one canvas: where on the slide the camera is pointing.
+   X0..X1 spans the scene, human on the left, elephant across the rest. */
+const X0 = -6.4, X1 = 3.0;
+const pc = x => ((x - X0) / (X1 - X0)) * 100;
+const MARKS = [[-5.05,'Homo sapiens'], [-2.25,'skull'], [-1.42,'foot'],
+               [-0.20,'limbs'], [1.66,'knee']];
+
 function pips(){
-  const here = posOf(step,view);
-  $('ppips').innerHTML = FLAT.map((p,k)=>
-    '<i class="'+(k===here?'on':(k<here?'past':''))+'"></i>').join('');
+  const s0 = SEQ[step];
+  let lo, hi;
+  if(s0.idx===null || s0.idx===10){ lo = 0; hi = 100; }
+  else {
+    const c = ADAPTS[s0.idx].cam;
+    const w = (SEQ[step].views[view]==='vs') ? 2.6 : 1.5;
+    lo = Math.max(0, pc(c[0]-w)); hi = Math.min(100, pc(c[0]+w));
+  }
+  $('ppips').innerHTML =
+    '<div class="ax"></div>' +
+    MARKS.map(([x,n])=>'<div class="tk" style="left:'+pc(x)+'%"></div>' +
+                       '<div class="lb" style="left:'+pc(x)+'%">'+n+'</div>').join('') +
+    '<div class="you" style="left:'+lo+'%;width:'+(hi-lo)+'%"></div>';
 }
 
 function render(){
@@ -267,29 +288,20 @@ function enter(){
   on=true; btn.classList.add('on');
   rail.style.display='none';
   $('pbar').classList.add('on'); $('ppips').style.display='flex';
-  document.querySelector('.hint').textContent='Talk, or use ← →';
+  document.querySelector('.hint').textContent='One slide · ← → moves the camera over it · 0 shows all of it';
   if(typeof resize==='function') resize();
   goTo(0,0);
 }
-function leave(){
-  on=false; btn.classList.remove('on');
-  if(listening) mic();
-  rail.style.display='';
-  $('pbar').classList.remove('on'); $('ppips').style.display='none';
-  figwrap.classList.remove('on');
-  document.querySelector('.hint').textContent='Drag to turn · ← → for each structure';
-  if(typeof resize==='function') resize();
-  reset();
-}
+
 
 /* a hook for checking the trigger words without a microphone:
    open the console in Present mode and call  sayTest('...the skull...')  */
 window.sayTest = t => { heard(String(t).toLowerCase()); return SEQ[step].kicker+' / '+SEQ[step].views[view]; };
 
-btn.onclick   = ()=> on ? leave() : enter();
+btn.onclick   = ()=> goTo(0,0);
 $('pNext').onclick = ()=> move(1);
 $('pPrev').onclick = ()=> move(-1);
-$('pEnd').onclick  = leave;
+$('pWhole').onclick = ()=> goTo(0,0);
 $('pMic').onclick  = mic;
 
 $('pCopy').onclick = async () => {
@@ -325,7 +337,11 @@ addEventListener('keydown', e=>{
   if(e.code==='Space'){ e.preventDefault(); move(1); }
   else if(e.key==='ArrowRight'){ e.stopImmediatePropagation(); move(1); }
   else if(e.key==='ArrowLeft'){ e.stopImmediatePropagation(); move(-1); }
-  else if(e.key==='Escape'){ leave(); }
+  else if(e.key==='Escape'||e.key==='0'){ goTo(0,0); }
 }, true);
+
+
+/* there is only one mode: the slide, open from the first frame */
+enter();
 
 })();
