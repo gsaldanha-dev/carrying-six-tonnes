@@ -18,7 +18,8 @@ const SEQ = [
   { num: '02', idx: 5,    kicker: 'Structure 02', title: 'Columnar limbs',   views: ['out','in','vs'], fig: 'fig/limbs.jpg' },
   { num: '03', idx: 7,    kicker: 'Structure 03', title: 'The foot',         views: ['out','in','vs'], fig: 'fig/foot.jpg' },
   { num: '04', idx: 6,    kicker: 'Structure 04', title: 'The knee',         views: ['out','in','vs'], fig: 'fig/knee.jpg' },
-  { num: '—',  idx: 10,   kicker: 'Close',        title: 'Why size forces it', views: ['out','in'],    fig: 'fig/scale.jpg' }
+  { num: '05', idx: 10,   kicker: 'Structure 05', title: 'Bone holds, muscle moves', views: ['out','in','vs'] },
+  { num: '—',  idx: 11,   kicker: 'Close',        title: 'Why size forces it', views: ['out','in'],    fig: 'fig/scale.jpg' }
 ];
 
 /* words that jump the talk forward. Only ever forward, never back, so a
@@ -52,9 +53,16 @@ const TRIG = [
   [4,'vs', ['ten degrees','10 degrees','menisci','meniscus','your knee','our knee',
             'same solution','convergence','twice']],
 
-  [5,'out',['square','cube','double every','doubling','eight times','times eight',
+  [5,'out',['muscle','muscles','muscular','now the muscle','fifth','bone holds',
+            'holds the animal','what about muscle','soft tissue']],
+  [5,'in', ['tendon','tendons','high at the shoulder','at the hip','mass held high',
+            'nuchal','ligament','carries the head','only move','moves the limb']],
+  [5,'vs', ['calf','your calf','our calf','low on the leg','bent knee','antagonistic',
+            'antagonistic pairs','achilles']],
+
+  [6,'out',['square','cube','double every','doubling','eight times','times eight',
             'geometry','to close','finally','last thing','wrap up']],
-  [5,'in', ['three moves','remove','add bone','by choice','not a choice','forced',
+  [6,'in', ['three moves','remove','add bone','by choice','not a choice','forced',
             'hundred times lighter','a hundred times']]
 ];
 

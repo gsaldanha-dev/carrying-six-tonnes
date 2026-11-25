@@ -196,7 +196,25 @@ const ADAPTS = [
     ]
   },
   {
-    id: 'scale', n: 11, kind: 'diff', short: 'Why size forces it',
+    id: 'muscle', n: 11, kind: 'diff', short: 'Muscle',
+    title: 'Bone holds, muscle moves',
+    cam: [-0.20, 1.95, 0, -1.90, 3.30, 8.60],
+    humanCam: [-5.040,0.620,0.100, -5.390,0.890,0.610],
+    humanParts: ['hind','muscle'],
+    humanLabels: [[-5.04,0.33,0.10,'calf: muscle kept low',12,-6]],
+    note: "The limb muscle sits high, at the shoulder and the hip; below the elbow and the knee there is almost nothing but tendon. Because the bones stand in a column, the skeleton carries the weight and the muscles only move the limb. A human keeps a muscle belly low on the leg \u2014 the calf \u2014 because a bent knee has to be held up. The same pattern explains the tall neural spines: they are the anchor for the nuchal ligament that carries the head.",
+    terms: [['Mass held high, tendon below',0], ['The column does the holding',0], ['Human: a calf low on the leg',1]],
+    rule: 'The skeleton alone predicts the muscle.',
+    labels: [
+      [-1.34, 2.32, 0.62, 'muscle mass held high, at the shoulder', -212, -22],
+      [-1.43, 0.96, 0.62, 'below the elbow, almost only tendon', -198, 26],
+      [-1.19, 3.36, 0, 'nuchal ligament, anchored on the tall spines', 64, -44],
+      [1.74, 2.30, 0.62, 'the same pattern at the hip', 104, -16],
+      [-5.03, 0.35, 0.10, 'a human keeps a calf low on the leg', -196, 32]
+    ]
+  },
+  {
+    id: 'scale', n: 12, kind: 'diff', short: 'Why size forces it',
     title: 'The square–cube law',
     cam: [-2.40, 1.50, 0, -3.6, 2.5, 15.2],
     humanCam: null,

@@ -147,7 +147,8 @@ const PARTS = {
   skull:['skull'], teeth:['teeth'], spine:['vert','spine','rib'],
   shoulder:['scap','clav'], forelimb:['fore'], posture:['fore','hind'],
   knee:['knee','hind'], foot:['foot','pad'], trunk:['trunk'],
-  gait:['foot','pad','fore','hind'], scale:[]
+  gait:['foot','pad','fore','hind'],
+  muscle:['muscle','fore','hind','scap','spine'], scale:[]
 };
 const OVER_TERMS = [['Same parts, same order',0],['100× the mass',0],['One rule throughout',1]];
 
@@ -311,6 +312,10 @@ function highlight(meshes, want, cutaway){
   meshes.forEach(m=>{
     if(!m.userData.m0) return;
     const on = (!want.length || want.includes(m.userData.part));
+    if(m.userData.soft){
+      m.visible = want.includes('muscle');
+      m.material = m.userData.m0; m.castShadow = false; return;
+    }
     if(m.userData.cell){
       m.visible = !!cutaway; m.material = m.userData.m0; m.castShadow = false; return;
     }

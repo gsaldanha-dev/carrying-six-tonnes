@@ -126,6 +126,14 @@ function makeMaterials() {
   });
   MATS.pad = new THREE.MeshStandardMaterial({ color: 0xC6A484, roughness: 0.95, roughnessMap: g });
   MATS.cart = new THREE.MeshStandardMaterial({ color: 0xA88058, roughness: 0.90 });
+  MATS.muscle = new THREE.MeshStandardMaterial({
+    color: 0xB8694F, roughness: 0.72, transparent: true, opacity: 0.58,
+    depthWrite: false
+  });
+  MATS.tendon = new THREE.MeshStandardMaterial({
+    color: 0xE4DAC6, roughness: 0.42, transparent: true, opacity: 0.80,
+    depthWrite: false
+  });
   MATS.ghost = new THREE.MeshStandardMaterial({
     color: 0xE6DFD2, roughness: 0.95, transparent: true, opacity: 0.12, depthWrite: false
   });
@@ -138,6 +146,13 @@ function add(group, geo, mat, part) {
   group.add(m); return m;
 }
 const addAll = (G, arr, mat, part) => arr.forEach(g => add(G, g, mat, part));
+
+/* muscle and tendon: hidden until a chapter asks for them */
+function soft(group, geo, mat) {
+  const m = add(group, geo, mat, 'muscle');
+  m.userData.soft = true; m.visible = false; m.castShadow = false;
+  return m;
+}
 
 /* ============================= ELEPHANT ============================ */
 function buildElephant() {
@@ -282,6 +297,33 @@ function buildElephant() {
     add(G, ellipsoid(1.66, 0.115, s * EZ, 0.31, 0.115, 0.30, 30), MATS.pad, 'pad');
   });
 
+  /* ---- muscle: the mass sits high, the lower limb is tendon ---- */
+  /* nuchal ligament: the elastic sheet that carries 300 kg of head,
+     anchored on exactly the tall neural spines labelled above      */
+  soft(G, taper([
+    V(-1.95, 2.72, 0), V(-1.62, 3.14, 0), V(-1.19, 3.36, 0),
+    V(-0.52, 3.22, 0), V(0.22, 3.02, 0)
+  ], 0.075, 0.042, 0, 40, 12, [1, 0.55, 1.6]), MATS.muscle);
+
+  [1, -1].forEach(s2 => {
+    /* forelimb: a deep belly over scapula and humerus … */
+    soft(G, taper([
+      V(-1.28, 2.78, s2 * EZ), V(-1.38, 2.22, s2 * EZ), V(-1.45, 1.46, s2 * EZ)
+    ], 0.33, 0.11, 0, 34, 14, [1, 1, 0.78]), MATS.muscle);
+    /* … and almost nothing below the elbow but tendon */
+    soft(G, taper([
+      V(-1.45, 1.34, s2 * EZ), V(-1.43, 0.94, s2 * EZ), V(-1.42, 0.56, s2 * EZ)
+    ], 0.072, 0.046, 0, 18, 10, [1, 1, 0.9]), MATS.tendon);
+
+    /* hindlimb: the same pattern */
+    soft(G, taper([
+      V(1.72, 2.70, s2 * EZ), V(1.74, 2.08, s2 * EZ), V(1.62, 1.52, s2 * EZ)
+    ], 0.31, 0.11, 0, 34, 14, [1, 1, 0.80]), MATS.muscle);
+    soft(G, taper([
+      V(1.66, 1.38, s2 * EZ), V(1.66, 0.94, s2 * EZ), V(1.67, 0.56, s2 * EZ)
+    ], 0.068, 0.044, 0, 18, 10, [1, 1, 0.9]), MATS.tendon);
+  });
+
   return G;
 }
 
@@ -349,6 +391,21 @@ function buildHuman() {
     add(G, taper([V(0.020, 0.045, s * 0.100), V(-0.090, 0.030, s * 0.100), V(-0.145, 0.022, s * 0.098)],
       0.050, 0.026, 0, 20, 10, [1, 0.7, 1]), MATS.bone, 'foot');
     add(G, ellipsoid(0.038, 0.013, s * 0.100, 0.060, 0.015, 0.050, 20), MATS.pad, 'pad');
+  });
+
+  /* ---- muscle: a human keeps a muscle belly low on the leg ---- */
+  [1, -1].forEach(s2 => {
+    soft(G, taper([                                   // thigh
+      V(0.016, 0.890, s2 * 0.072), V(0.010, 0.700, s2 * 0.082),
+      V(0.000, 0.515, s2 * 0.096)
+    ], 0.082, 0.040, 0, 24, 12, [1, 1, 0.80]), MATS.muscle);
+    soft(G, taper([                                   // calf: the contrast
+      V(-0.006, 0.462, s2 * 0.100), V(-0.016, 0.350, s2 * 0.104),
+      V(-0.006, 0.170, s2 * 0.098)
+    ], 0.050, 0.016, 0, 22, 12, [1, 1, 0.84]), MATS.muscle);
+    soft(G, taper([                                   // achilles
+      V(-0.008, 0.180, s2 * 0.098), V(0.004, 0.062, s2 * 0.100)
+    ], 0.014, 0.011, 0, 10, 8), MATS.tendon);
   });
 
   G.position.x = -5.05;
