@@ -164,6 +164,48 @@ function both(a){
           tz + R*Math.sin(ph)*Math.cos(th)];
 }
 
+/* ---- the diagrams, standing in the scene as exhibition boards ------
+   They are part of the one canvas: visible in the wide view, and reached
+   by flying the camera to them, never by covering the screen.          */
+const BOARDS = [
+  { fig:'fig/limbs.jpg', x:-6.30 },
+  { fig:'fig/foot.jpg',  x:-2.80 },
+  { fig:'fig/knee.jpg',  x: 0.70 },
+  { fig:'fig/scale.jpg', x: 4.20 }
+];
+const BW = 2.60, BH = 1.37, BY = 3.05, BZ = -5.40;
+const boardOf = {};
+(function buildBoards(){
+  if(typeof THREE==='undefined' || typeof scene==='undefined') return;
+  const load = new THREE.TextureLoader();
+  BOARDS.forEach(b=>{
+    const tex = load.load(b.fig);
+    if('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
+    else tex.encoding = THREE.sRGBEncoding;
+    tex.anisotropy = 8;
+    const g = new THREE.Group();
+    const back = new THREE.Mesh(
+      new THREE.PlaneGeometry(BW+0.11, BH+0.11),
+      new THREE.MeshBasicMaterial({ color:0x15120D }));
+    back.position.z = -0.012;
+    const face = new THREE.Mesh(
+      new THREE.PlaneGeometry(BW, BH),
+      new THREE.MeshBasicMaterial({ map:tex }));
+    const leg = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.035,0.035, BY-BH/2, 10),
+      new THREE.MeshBasicMaterial({ color:0x2A241B }));
+    leg.position.set(0, -(BY)/2 - BH/4 + 0.02, -0.02);
+    g.add(back, face, leg);
+    g.position.set(b.x, BY, BZ);
+    scene.add(g);
+    boardOf[b.fig] = g;
+  });
+})();
+function boardCam(fig){
+  const b = BOARDS.find(x=>x.fig===fig);
+  return [b.x, BY, BZ,  b.x, BY + 0.05, BZ + 3.05];
+}
+
 /* ---- state -------------------------------------------------------- */
 let on=false, step=0, view=0, rec=null, listening=false, said='';
 /* the whole run, kept so it can be copied out afterwards and read back */
@@ -207,17 +249,17 @@ function render(){
   document.querySelectorAll('#pbar .vw b').forEach(b=>
     b.classList.toggle('on', b.dataset.v===v));
 
-  const showFig = (v==='in' && s.fig);
-  figwrap.classList.toggle('on', !!showFig);
-  if(showFig) figwrap.querySelector('img').src = s.fig;
+  const onBoard = (v==='in' && s.fig);
 
-  if(s.idx===null){ reset(); }
+  if(s.idx===null){ window.FLATVIEW=false; reset(); }
   else {
     const a = ADAPTS[s.idx], c = a.cam;
     /* the cutaway is the skull's air cells — it means nothing anywhere else */
     const open = (a.id === 'skull');
+    window.FLATVIEW = !!onBoard;
     if(v==='out')      pick(s.idx,{cam:cam(c,1.85,-.34,-.07), cut:false, lbl:[0,1], inset:false});
-    else if(v==='in')  pick(s.idx,{cam:cam(c,0.80,.20,.12),   cut:open,  lbl:[1,2], inset:false});
+    else if(v==='in')  pick(s.idx,{cam: onBoard ? boardCam(s.fig) : cam(c,0.80,.20,.12),
+                                   cut:open, lbl: onBoard ? [] : [1,2], inset:false});
     else               pick(s.idx,{cam:both(a),               cut:open,  lbl:[2,3], inset:false});
     $('num').textContent = s.num;
   }

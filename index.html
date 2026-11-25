@@ -399,8 +399,9 @@ const clock=new THREE.Clock();
   const t=clock.getElapsedTime(), k=0.062;
   T.lerp(Tg,k);
   S.r += (Sg.r-S.r)*k; S.th += (Sg.th-S.th)*k; S.ph += (Sg.ph-S.ph)*k;
-  const th=S.th+uTh+Math.sin(t*0.21)*0.085;
-  const ph=Math.max(0.22,Math.min(1.50,S.ph+uPh+Math.sin(t*0.15)*0.022));
+  const wob = window.FLATVIEW ? 0 : 1;   /* a flat board must not drift out of frame */
+  const th=S.th+uTh+wob*Math.sin(t*0.21)*0.085;
+  const ph=Math.max(0.22,Math.min(1.50,S.ph+uPh+wob*Math.sin(t*0.15)*0.022));
   camera.position.set(
     T.x + S.r*Math.sin(ph)*Math.sin(th),
     T.y + S.r*Math.cos(ph),
