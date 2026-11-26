@@ -219,7 +219,7 @@ function render(){
     else if(v==='in')  pick(s.idx,{cam: onBoard ? boardCam(s.fig) : cam(c,0.80,.20,.12),
                                    cut:open, lbl: onBoard ? [] : [1,2], inset:false});
     else               pick(s.idx,{cam:both(a),               cut:open,  lbl:[2,3], inset:false});
-    $('num').textContent = s.num;
+    if(!window.ONE) $('num').textContent = s.num;
   }
 
 }

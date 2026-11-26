@@ -327,19 +327,24 @@ function highlight(meshes, want, cutaway){
     m.castShadow = on;
   });
 }
+const ONE = new URLSearchParams(location.search).has('one');
+window.ONE = ONE;
+
 function pick(i, opt){
   opt = opt || {};
   cur=i; const a=ADAPTS[i];
   document.querySelectorAll('.seg').forEach(n=>n.classList.toggle('on',+n.dataset.i===i));
-  const nn = String(a.n).padStart(2,'0');
-  document.getElementById('num').textContent = nn;
-  const k=document.getElementById('kind');
-  k.className = 'kind' + (a.kind==='same'?' same':'');
-  k.textContent = a.kind==='same' ? 'A similarity' : 'A difference';
-  document.getElementById('ttl').textContent=a.title;
-  setTerms(a.terms);
-  document.getElementById('nt').textContent=a.note;
-  document.getElementById('vd').textContent=a.rule;
+  if(!ONE){
+    const nn = String(a.n).padStart(2,'0');
+    document.getElementById('num').textContent = nn;
+    const k=document.getElementById('kind');
+    k.className = 'kind' + (a.kind==='same'?' same':'');
+    k.textContent = a.kind==='same' ? 'A similarity' : 'A difference';
+    document.getElementById('ttl').textContent=a.title;
+    setTerms(a.terms);
+    document.getElementById('nt').textContent=a.note;
+    document.getElementById('vd').textContent=a.rule;
+  }
   const cut = (opt.cut===undefined) ? (a.id==='skull') : opt.cut;
   highlight(ELE_MESHES, PARTS[a.id]||[], cut);
   highlight(HUM_MESHES, a.humanParts||[], false);
@@ -354,12 +359,14 @@ function pick(i, opt){
 function reset(){
   cur=-1;
   document.querySelectorAll('.seg').forEach(n=>n.classList.remove('on'));
-  document.getElementById('num').textContent='—';
-  const k=document.getElementById('kind'); k.className='kind'; k.textContent='Overview';
-  document.getElementById('ttl').textContent='Two skeletons, one rule';
-  setTerms(OVER_TERMS);
-  document.getElementById('nt').textContent='The same parts, in the same order, in both animals. Nothing has been invented — what changed is proportion, posture and the inside of the bone.';
-  document.getElementById('vd').textContent='Add bone where force passes to the ground; remove bone where it is only cargo.';
+  if(!ONE){
+    document.getElementById('num').textContent='—';
+    const k=document.getElementById('kind'); k.className='kind'; k.textContent='Overview';
+    document.getElementById('ttl').textContent='Two skeletons, one rule';
+    setTerms(OVER_TERMS);
+    document.getElementById('nt').textContent='The same parts, in the same order, in both animals. Nothing has been invented — what changed is proportion, posture and the inside of the bone.';
+    document.getElementById('vd').textContent='Add bone where force passes to the ground; remove bone where it is only cargo.';
+  }
   highlight(ELE_MESHES, [], false); highlight(HUM_MESHES, [], false);
   setLabels(BASE); flyTo(OVER);
   insetOn = false;
@@ -369,6 +376,33 @@ function reset(){
 
 document.getElementById('src').textContent =
   'Sources — ' + SOURCES.map(s=>s[0]+' ('+s[1]+')').join(' · ');
+
+/* ?one=1 — the objection-proof cut. The side panel is written once and
+   never changes again: no number, no new heading, no new paragraph. The
+   labels stay, because a label pinned to a bone is part of the drawing,
+   not a new slide — it becomes readable as the camera reaches it.      */
+if(ONE){
+  document.getElementById('num').textContent = '';
+  const k = document.getElementById('kind');
+  k.className = 'kind'; k.textContent = 'One slide';
+  document.getElementById('ttl').textContent = 'Two skeletons, one rule';
+  setTerms([
+    ['01 Skull — air inside the bone', 0],
+    ['02 Columnar limbs — pure compression', 0],
+    ['03 Foot — the bone never lands', 0],
+    ['04 Knee — the same lock as ours', 1],
+    ['05 Muscle — the bone does the holding', 0]
+  ]);
+  document.getElementById('nt').textContent =
+    'The same parts, in the same order, in both animals. Nothing has been '
+    + 'invented — what changed is proportion, posture and the inside of the '
+    + 'bone. Every structure below is on the same canvas from the first '
+    + 'second; the camera is the only thing that moves.';
+  document.getElementById('vd').textContent =
+    'Add bone where force passes to the ground; remove bone where it is only cargo.';
+  const hint = document.querySelector('.hint');
+  if(hint) hint.textContent = 'One slide · ← → move only the camera · 0 shows all of it';
+}
 
 addEventListener('keydown',e=>{
   if(e.key==='ArrowRight') pick((cur+1+ADAPTS.length)%ADAPTS.length);
