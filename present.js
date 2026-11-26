@@ -255,13 +255,19 @@ function heard(text){
     const s = SEQ[step], j = s.views.indexOf('in');
     if(s.fig && j > -1){ goTo(step, j); flash(); return; }
   }
-  let best = -1;
+
+  /* detail words only ever carry him forward, so a word said in passing
+     cannot drag the talk backwards. Naming a structure is different: if
+     he says "now the muscle" he means it, wherever he is.            */
+  let best = -1, named = -1;
   TRIG.forEach(([i,v,words])=>{
     const k = posOf(i, SEQ[i].views.indexOf(v));
-    if(k<=here || k<=best) return;
-    if(words.some(w=>t.includes(w))) best = k;
+    if(!words.some(w=>t.includes(w))) return;
+    if(k > here && k > best) best = k;
+    if(v === 'out' && k !== here && named < 0) named = k;
   });
-  if(best>-1){ goTo(FLAT[best][0], FLAT[best][1]); flash(); }
+  const go = (best > -1) ? best : named;
+  if(go > -1){ goTo(FLAT[go][0], FLAT[go][1]); flash(); }
 }
 
 /* a short pulse on the view chip, so he can see the voice was understood */
