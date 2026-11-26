@@ -52,7 +52,9 @@ const TRIG = [
   [3,'vs', ['heel','calcaneus','thin pad','your foot','our foot','strikes the ground','your heel','land on your']],
 
   [4,'out',['the knee','knee','fourth structure','last structure','joint','one eighty',
-            '180','nearly straight','need','the need','nee','knees','tibia','femur and']],
+            '180','nearly straight','need','the need','nee','knees','tibia','femur and',
+            'unexpected','the similarity','unexpected similarity','the surprise',
+            'surprising','here is the surprise','same lock']],
   [4,'in', ['screw-home','screw home','screwhome','sixteen','locks straight','locking',
             'it locks','no muscle','costs no muscle',
             'screw hole','screwed home','skrew home','rotates','tibia rotates']],
@@ -239,9 +241,20 @@ function move(d){
 }
 
 /* ---- speech ------------------------------------------------------- */
+/* saying "the screen" or "the board" brings up the panel standing behind
+   this structure, wherever he happens to be — it is not a step forward,
+   so it sits outside the forward-only matching below                   */
+const BOARDWORDS = ['the screen','on screen','the board','the diagram',
+                    'the panel','the drawing','behind me','up there'];
+
 function heard(text){
   const t = text.toLowerCase();
   const here = posOf(step,view);
+
+  if(BOARDWORDS.some(w=>t.includes(w))){
+    const s = SEQ[step], j = s.views.indexOf('in');
+    if(s.fig && j > -1){ goTo(step, j); flash(); return; }
+  }
   let best = -1;
   TRIG.forEach(([i,v,words])=>{
     const k = posOf(i, SEQ[i].views.indexOf(v));
@@ -276,15 +289,28 @@ function mic(){
       log.push('['+stamp()+' · '+SEQ[step].kicker+' / '+SEQ[step].views[view]+'] '+fin.trim());
       heard(fin);
     }
-    const show=(said+' '+int).trim().slice(-170);
-    say(show);
+    /* the caption is the last thing said, not a transcript of the talk */
+    const show = (fin || int).trim().slice(-120);
+    if(show){
+      say(show);
+      clearTimeout(capT);
+      capT = setTimeout(()=>say(''), 2600);
+    }
     if(int) heard(int);
   };
+  /* no-speech, aborted and network are ordinary interruptions: Chrome
+     ends the session and we start it again. Only a refused microphone
+     is worth stopping for, and worth telling him about.               */
   rec.onerror = ev => {
-    say('<i>Microphone: '+ev.error+' — press L to try again. The arrow keys still work.</i>');
-    listening = false; armed = false;
+    const fatal = (ev.error === 'not-allowed' || ev.error === 'service-not-allowed');
+    if(fatal){
+      say('<i>Microphone: '+ev.error+' — press L to try again. The arrow keys still work.</i>');
+      listening = false; armed = false;
+    }
   };
-  rec.onend = () => { if(listening){ try{ rec.start(); }catch(e){} } };
+  rec.onend = () => {
+    if(listening){ setTimeout(()=>{ try{ rec.start(); }catch(e){} }, 120); }
+  };
   try { rec.start(); listening=true; log=[]; t0=Date.now();
       }
   catch(e){ listening = false; }   /* no microphone here: the keys still work */
@@ -336,7 +362,7 @@ const copyTalk = async () => {
   }
 };
 
-let armed = false;
+let armed = false, capT = 0;
 function armMic(){ if(armed || listening) return; armed = true; try{ mic(); }catch(e){} }
 /* a failed microphone must be retriable: a browser that refused once
    because there was no gesture yet will say yes after a click         */
