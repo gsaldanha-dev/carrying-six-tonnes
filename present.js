@@ -273,8 +273,8 @@ function mic(){
     if(int) heard(int);
   };
   rec.onerror = ev => {
-    say('<i>Microphone: '+ev.error+'. The arrow keys still work.</i>');
-    listening=false;
+    say('<i>Microphone: '+ev.error+' — press L to try again. The arrow keys still work.</i>');
+    listening = false; armed = false;
   };
   rec.onend = () => { if(listening){ try{ rec.start(); }catch(e){} } };
   try { rec.start(); listening=true; log=[]; t0=Date.now();
@@ -285,7 +285,7 @@ function mic(){
 /* ---- enter / leave ------------------------------------------------ */
 function enter(){
   on=true;
-    document.querySelector('.hint').textContent='One slide · ← → moves the camera over it · 0 shows all of it';
+    document.querySelector('.hint').textContent='← → camera · 0 all · F full screen · L listen';
   if(typeof resize==='function') resize();
   goTo(0,0);
 }
@@ -330,6 +330,9 @@ const copyTalk = async () => {
 
 let armed = false;
 function armMic(){ if(armed || listening) return; armed = true; try{ mic(); }catch(e){} }
+/* a failed microphone must be retriable: a browser that refused once
+   because there was no gesture yet will say yes after a click         */
+function retryMic(){ armed = false; listening = false; try{ mic(); }catch(e){} }
 
 addEventListener('keydown', e=>{
   if(!on) return;
@@ -340,6 +343,8 @@ addEventListener('keydown', e=>{
     else document.exitFullscreen?.();
     return;
   }
+  if(e.key==='l'||e.key==='L'){ e.preventDefault(); retryMic();
+    say('<i>Listening…</i>'); return; }
   if(e.key==='c'||e.key==='C'){ e.preventDefault(); copyTalk(); return; }
   if(e.target.tagName==='BUTTON' && e.code==='Space') return;
   if(e.code==='Space'){ e.preventDefault(); move(1); }
