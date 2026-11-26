@@ -259,6 +259,25 @@ function nearestBoard(){
   return -1;
 }
 
+/* terms distinctive enough that he can only mean one place, so they
+   carry him there from anywhere, the way a structure's name does   */
+const STRONG = [
+  [1,'in', ['pneumatised','pneumatized','newmatised','numatised','air cell','air cells',
+            'bony plate','bony plates']],
+  [1,'vs', ['solid plate','your skull','our skull']],
+  [2,'in', ['trabecular','trabecula','tribecular','marrow','medullary','cross-section',
+            'cross section']],
+  [2,'vs', ['femur','hollow tube','elastic energy']],
+  [3,'in', ['digital cushion','collagen','predigit','pre digit','sixth toe','prepollex',
+            'force divided','divided by area']],
+  [3,'vs', ['heel','calcaneus']],
+  [4,'in', ['screw-home','screw home','screwhome','screw hole','tibia']],
+  [4,'vs', ['menisci','meniscus','meniski','sixteen degrees','ten degrees','convergence']],
+  [5,'in', ['tendon','tendons','nuchal','nucal','ligament']],
+  [5,'vs', ['calf','calves','achilles','antagonistic']],
+  [6,'in', ['square-cube','square cube','eight times','cube and','geometry']]
+];
+
 function heard(text){
   const t = text.toLowerCase();
   const here = posOf(step,view);
@@ -271,6 +290,13 @@ function heard(text){
   /* detail words only ever carry him forward, so a word said in passing
      cannot drag the talk backwards. Naming a structure is different: if
      he says "now the muscle" he means it, wherever he is.            */
+  for(const [i,v,words] of STRONG){
+    if(!words.some(w=>t.includes(w))) continue;
+    const k = posOf(i, SEQ[i].views.indexOf(v));
+    if(k !== here){ goTo(FLAT[k][0], FLAT[k][1]); flash(); return; }
+    return;
+  }
+
   let best = -1, named = -1;
   TRIG.forEach(([i,v,words])=>{
     const k = posOf(i, SEQ[i].views.indexOf(v));
