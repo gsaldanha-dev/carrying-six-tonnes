@@ -245,15 +245,27 @@ function move(d){
    this structure, wherever he happens to be — it is not a step forward,
    so it sits outside the forward-only matching below                   */
 const BOARDWORDS = ['the screen','on screen','the board','the diagram',
-                    'the panel','the drawing','behind me','up there'];
+                    'the panel','the drawing','behind me','up there',
+                    'slide','the image','the picture','the photo'];
+
+/* the nearest panel: this structure's own, or the next one along */
+function nearestBoard(){
+  const here = SEQ[step];
+  if(here.fig && here.views.indexOf('in') > -1) return step;
+  for(let i = step + 1; i < SEQ.length; i++)
+    if(SEQ[i].fig && SEQ[i].views.indexOf('in') > -1) return i;
+  for(let i = step - 1; i >= 0; i--)
+    if(SEQ[i].fig && SEQ[i].views.indexOf('in') > -1) return i;
+  return -1;
+}
 
 function heard(text){
   const t = text.toLowerCase();
   const here = posOf(step,view);
 
   if(BOARDWORDS.some(w=>t.includes(w))){
-    const s = SEQ[step], j = s.views.indexOf('in');
-    if(s.fig && j > -1){ goTo(step, j); flash(); return; }
+    const b = nearestBoard();
+    if(b > -1){ goTo(b, SEQ[b].views.indexOf('in')); flash(); return; }
   }
 
   /* detail words only ever carry him forward, so a word said in passing
